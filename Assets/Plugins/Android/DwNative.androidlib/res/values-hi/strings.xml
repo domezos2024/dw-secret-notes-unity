@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dw_widget_app_name">dw गुप्त नोट्स</string>
+    <string name="dw_widget_description">होम स्क्रीन से जल्दी से एक संदेश एन्क्रिप्ट करें और शेयर लिंक प्राप्त करें</string>
+    <string name="dw_widget_launcher_description">dw Secret Notes खोलता है</string>
+</resources>

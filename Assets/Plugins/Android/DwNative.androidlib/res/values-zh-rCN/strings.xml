@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dw_widget_app_name">dw 秘密笔记</string>
+    <string name="dw_widget_description">直接在主屏幕上快速加密一条消息并获取分享链接</string>
+    <string name="dw_widget_launcher_description">打开 dw Secret Notes</string>
+</resources>

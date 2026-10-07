@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dw_widget_app_name">dw 秘密のメモ</string>
+    <string name="dw_widget_description">ホーム画面からメッセージをすばやく暗号化して共有リンクを取得します</string>
+    <string name="dw_widget_launcher_description">dw Secret Notes を開きます</string>
+</resources>

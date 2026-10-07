@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dw_widget_app_name">dw Catatan Rahasia</string>
+    <string name="dw_widget_description">Enkripsi pesan dengan cepat dan dapatkan tautan berbagi langsung dari layar utama</string>
+    <string name="dw_widget_launcher_description">Membuka dw Secret Notes</string>
+</resources>

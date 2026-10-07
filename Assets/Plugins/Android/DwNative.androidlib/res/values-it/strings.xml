@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dw_widget_app_name">dw Note Segrete</string>
+    <string name="dw_widget_description">Cifra rapidamente un messaggio e ottieni un link da condividere direttamente dalla schermata Home</string>
+    <string name="dw_widget_launcher_description">Apre dw Secret Notes</string>
+</resources>

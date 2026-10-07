@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dw_widget_app_name">dw ملاحظات سرية</string>
+    <string name="dw_widget_description">شفّر رسالة بسرعة واحصل على رابط للمشاركة من الشاشة الرئيسية</string>
+    <string name="dw_widget_launcher_description">يفتح dw Secret Notes</string>
+</resources>

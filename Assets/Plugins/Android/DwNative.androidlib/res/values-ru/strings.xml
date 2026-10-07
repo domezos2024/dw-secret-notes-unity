@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dw_widget_app_name">dw Секретные Заметки</string>
+    <string name="dw_widget_description">Быстро зашифруйте сообщение и получите ссылку для отправки прямо с главного экрана</string>
+    <string name="dw_widget_launcher_description">Открывает dw Secret Notes</string>
+</resources>

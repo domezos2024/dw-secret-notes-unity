@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dw_widget_app_name">dw Secret Notes</string>
+    <string name="dw_widget_description">Quickly encrypt a message and get a share link from your home screen</string>
+    <string name="dw_widget_launcher_description">Opens dw Secret Notes</string>
+</resources>

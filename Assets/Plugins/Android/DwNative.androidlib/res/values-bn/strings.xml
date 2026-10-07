@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dw_widget_app_name">dw গোপন নোট</string>
+    <string name="dw_widget_description">হোম স্ক্রিন থেকে দ্রুত একটি বার্তা এনক্রিপ্ট করুন এবং শেয়ার লিঙ্ক পান</string>
+    <string name="dw_widget_launcher_description">dw Secret Notes খোলে</string>
+</resources>

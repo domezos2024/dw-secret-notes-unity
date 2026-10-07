@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dw_widget_app_name">dw Geheime Notizen</string>
+    <string name="dw_widget_description">Verschlüsselt schnell eine Nachricht und erstellt einen Teilen-Link direkt vom Startbildschirm</string>
+    <string name="dw_widget_launcher_description">Öffnet dw Geheime Notizen</string>
+</resources>
