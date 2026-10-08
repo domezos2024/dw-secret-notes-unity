@@ -8,7 +8,6 @@
             android:theme="@style/UnityThemeSelector"
             android:exported="true"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
             android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

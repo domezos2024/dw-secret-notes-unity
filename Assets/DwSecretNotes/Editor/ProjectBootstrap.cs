@@ -50,7 +50,7 @@ namespace DwSecretNotes.EditorTools
             PlayerSettings.runInBackground = false;
             PlayerSettings.defaultScreenWidth = 450; PlayerSettings.defaultScreenHeight = 900;
             PlayerSettings.fullScreenMode = FullScreenMode.Windowed; PlayerSettings.resizableWindow = true;
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
             PlayerSettings.SplashScreen.show = false; PlayerSettings.SplashScreen.showUnityLogo = false;
             PlayerSettings.SplashScreen.backgroundColor = new Color32(5, 13, 31, 255);
             var nbt = NamedBuildTarget.Android;
@@ -68,8 +68,12 @@ namespace DwSecretNotes.EditorTools
             PlayerSettings.Android.bundleVersionCode = Math.Max(PlayerSettings.Android.bundleVersionCode, AppInfo.VersionCode);
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.OpenGLES3, GraphicsDeviceType.Vulkan });
-            PlayerSettings.allowedAutorotateToPortrait = true; PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
-            PlayerSettings.allowedAutorotateToLandscapeLeft = false; PlayerSettings.allowedAutorotateToLandscapeRight = false;
+            PlayerSettings.allowedAutorotateToPortrait = true; PlayerSettings.allowedAutorotateToPortraitUpsideDown = true;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true; PlayerSettings.allowedAutorotateToLandscapeRight = true;
+            PlayerSettings.Android.resizeableActivity = true;
+            PlayerSettings.Android.minifyRelease = true; PlayerSettings.Android.minifyDebug = false;
+            UnityEditor.Android.UserBuildSettings.DebugSymbols.level = Unity.Android.Types.DebugSymbolLevel.SymbolTable;
+            UnityEditor.Android.UserBuildSettings.DebugSymbols.format = Unity.Android.Types.DebugSymbolFormat.Zip | Unity.Android.Types.DebugSymbolFormat.IncludeInBundle;
             DisableHardwareStatistics();
             var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
             if (icon != null)
@@ -105,7 +109,12 @@ namespace DwSecretNotes.EditorTools
             EditorUserBuildSettings.buildAppBundle = bundle;
             EditorUserBuildSettings.development = development;
             ConfigureSigning();
-            try { return Run(new BuildPlayerOptions { scenes = new[] { ScenePath }, locationPathName = path, target = BuildTarget.Android, targetGroup = BuildTargetGroup.Android, options = development ? BuildOptions.Development : BuildOptions.None }); }
+            try
+            {
+                bool ok = Run(new BuildPlayerOptions { scenes = new[] { ScenePath }, locationPathName = path, target = BuildTarget.Android, targetGroup = BuildTargetGroup.Android, options = development ? BuildOptions.Development : BuildOptions.None });
+                if (ok) CopyReleaseArtifacts(path);
+                return ok;
+            }
             finally { ClearSigning(); }
         }
         static bool BuildWindows(string path, bool development)
@@ -132,6 +141,14 @@ namespace DwSecretNotes.EditorTools
                 Debug.Log("[DW] Signierung mit eigenem Keystore");
             }
             else PlayerSettings.Android.useCustomKeystore = false;
+        }
+        static void CopyReleaseArtifacts(string path)
+        {
+            var dir = Path.GetDirectoryName(Path.GetFullPath(path)); var tag = AppInfo.Version + "-" + AppInfo.VersionCode;
+            var mapping = Path.GetFullPath("Library/Bee/Android/Prj/IL2CPP/Gradle/launcher/build/outputs/mapping/release/mapping.txt");
+            if (File.Exists(mapping)) { File.Copy(mapping, Path.Combine(dir, "mapping-" + tag + ".txt"), true); Debug.Log("[DW] ReTrace-Zuordnungsdatei: mapping-" + tag + ".txt"); }
+            else Debug.LogWarning("[DW] Keine mapping.txt gefunden: " + mapping);
+            foreach (var z in Directory.GetFiles(dir, "*.symbols.zip")) Debug.Log("[DW] Native Debug-Symbole: " + Path.GetFileName(z));
         }
         static void ClearSigning()
         {

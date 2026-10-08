@@ -5,6 +5,7 @@ android {
     compileSdk 36
     defaultConfig {
         minSdk 26
+        consumerProguardFiles 'proguard-rules.pro'
     }
     sourceSets {
         main {
@@ -21,4 +22,7 @@ android {
 
 dependencies {
     implementation 'com.google.android.play:review:2.0.2'
+    // play-services-basement (via review) pulls androidx.fragment 1.1.0 / androidx.activity 1.0.0, both flagged as outdated by Play
+    implementation 'androidx.fragment:fragment:1.8.6'
+    implementation 'androidx.activity:activity:1.10.1'
 }

@@ -107,6 +107,16 @@ namespace DwSecretNotes.UI
         {
             var l = Text(text, "dw-link", p => p.Primary); l.AddManipulator(new Clickable(onClick)); return l;
         }
+        public const float MaxContentWidth = 720;
+        public static T CenterColumn<T>(T e, float minPad = 16) where T : VisualElement
+        {
+            e.RegisterCallback<GeometryChangedEvent>(ev =>
+            {
+                float pad = Mathf.Max(minPad, (ev.newRect.width - MaxContentWidth) / 2f);
+                if (Mathf.Abs(e.resolvedStyle.paddingLeft - pad) > 0.5f) { e.style.paddingLeft = pad; e.style.paddingRight = pad; }
+            });
+            return e;
+        }
         public static void Enter(VisualElement e, int delayMs = 0)
         {
             e.AddToClassList("dw-enter");

@@ -18,7 +18,7 @@ namespace DwSecretNotes.UI
         protected ScrollView Scroll(VisualElement root)
         {
             var sv = new ScrollView(ScrollViewMode.Vertical) { touchScrollBehavior = ScrollView.TouchScrollBehavior.Elastic, horizontalScrollerVisibility = ScrollerVisibility.Hidden, verticalScrollerVisibility = ScrollerVisibility.Hidden };
-            sv.AddToClassList("dw-scroll"); sv.contentContainer.AddToClassList("dw-scroll__content"); root.Add(sv); return sv;
+            sv.AddToClassList("dw-scroll"); sv.contentContainer.AddToClassList("dw-scroll__content"); Kit.CenterColumn(sv.contentContainer); root.Add(sv); return sv;
         }
     }
 }

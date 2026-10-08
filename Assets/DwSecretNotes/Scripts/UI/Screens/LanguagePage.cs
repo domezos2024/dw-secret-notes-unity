@@ -12,7 +12,7 @@ namespace DwSecretNotes.UI
         public override bool ShowTopBar => !firstRun;
         protected override void Build(VisualElement root)
         {
-            var head = Kit.Col("dw-pagehead");
+            var head = Kit.CenterColumn(Kit.Col("dw-pagehead"), 20);
             if (firstRun)
             {
                 var logo = new VisualElement(); logo.AddToClassList("dw-welcome__logo"); logo.style.backgroundImage = new StyleBackground(UnityEngine.Resources.Load<UnityEngine.Texture2D>("UI/app_icon")); head.Add(logo);
@@ -31,7 +31,7 @@ namespace DwSecretNotes.UI
                 card.AddManipulator(new Clickable(() => { Native.I.Haptic(Haptic.LongPress); selected = lang.Tag; ThemeBinder.Set(ThemeBinder.Current); Refresh(); }));
                 list.contentContainer.Add(card);
             }
-            var bar = Kit.Col("dw-bottombar");
+            var bar = Kit.CenterColumn(Kit.Col("dw-bottombar"));
             confirm = new DwButton("OK", IconKind.Check, BtnKind.Primary, () => App.SetLanguage(selected)); confirm.AddToClassList("dw-btn--lg");
             bar.Add(confirm); root.Add(bar);
             Refresh();

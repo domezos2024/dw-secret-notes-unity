@@ -99,7 +99,7 @@
 .dw-scrim--hidden { opacity: 0; }
 .dw-sheethost { position: absolute; left: 0; right: 0; bottom: 0; top: 0; justify-content: flex-end; }
 .dw-dialoghost { position: absolute; left: 0; right: 0; bottom: 0; top: 0; justify-content: center; align-items: center; padding: 24px; }
-.dw-sheet { border-top-left-radius: 26px; border-top-right-radius: 26px; padding: 10px 18px 26px 18px; max-height: 85%; transition-property: translate, opacity; transition-duration: 280ms; transition-timing-function: ease-out-cubic; }
+.dw-sheet { width: 100%; max-width: 720px; align-self: center; border-top-left-radius: 26px; border-top-right-radius: 26px; padding: 10px 18px 26px 18px; max-height: 85%; transition-property: translate, opacity; transition-duration: 280ms; transition-timing-function: ease-out-cubic; }
 .dw-sheet__handle { width: 40px; height: 4px; border-radius: 2px; align-self: center; margin-bottom: 14px; }
 .dw-sheet__scroll { max-height: 520px; flex-shrink: 1; }
 .dw-dialog { border-radius: 24px; border-width: 1px; padding: 22px; width: 100%; max-width: 440px; transition-property: scale, opacity; transition-duration: 220ms; transition-timing-function: ease-out-back; }

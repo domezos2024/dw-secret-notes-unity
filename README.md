@@ -3,7 +3,7 @@
 Unity-6-Neuauflage der Android-App `dw-secret-notes` (gleiche Funktionen, gleiches Backend, neue UI-Toolkit-Oberfläche).
 
 - Unity: 6000.3.25f1, UI Toolkit (komplett aus C# aufgebaut), Built-in Render Pipeline
-- Paket: `com.snote.domezos`, Version 6.0.0 (versionCode 47) – Update-Pfad der bestehenden Play-Store-App, sofern mit demselben Schlüssel signiert
+- Paket: `com.snote.domezos`, Version 6.0.1 (versionCode 48) – Update-Pfad der bestehenden Play-Store-App, sofern mit demselben Schlüssel signiert
 - Android-Quellprojekt: `E:\AndroidStudioProjects\dw-secret-notes`
 
 ## Funktionen (1:1 aus der Android-App)
