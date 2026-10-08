@@ -105,7 +105,8 @@ namespace DwSecretNotes.EditorTools
             EditorUserBuildSettings.buildAppBundle = bundle;
             EditorUserBuildSettings.development = development;
             ConfigureSigning();
-            return Run(new BuildPlayerOptions { scenes = new[] { ScenePath }, locationPathName = path, target = BuildTarget.Android, targetGroup = BuildTargetGroup.Android, options = development ? BuildOptions.Development : BuildOptions.None });
+            try { return Run(new BuildPlayerOptions { scenes = new[] { ScenePath }, locationPathName = path, target = BuildTarget.Android, targetGroup = BuildTargetGroup.Android, options = development ? BuildOptions.Development : BuildOptions.None }); }
+            finally { ClearSigning(); }
         }
         static bool BuildWindows(string path, bool development)
         {
@@ -131,6 +132,12 @@ namespace DwSecretNotes.EditorTools
                 Debug.Log("[DW] Signierung mit eigenem Keystore");
             }
             else PlayerSettings.Android.useCustomKeystore = false;
+        }
+        static void ClearSigning()
+        {
+            PlayerSettings.Android.keystorePass = ""; PlayerSettings.Android.keyaliasPass = "";
+            PlayerSettings.Android.keystoreName = ""; PlayerSettings.Android.keyaliasName = ""; PlayerSettings.Android.useCustomKeystore = false;
+            AssetDatabase.SaveAssets();
         }
         static string Arg(string name, string def) { var a = Environment.GetCommandLineArgs(); for (int i = 0; i < a.Length - 1; i++) if (a[i] == name) return a[i + 1]; return def; }
         static bool Flag(string name) => Environment.GetCommandLineArgs().Contains(name);
