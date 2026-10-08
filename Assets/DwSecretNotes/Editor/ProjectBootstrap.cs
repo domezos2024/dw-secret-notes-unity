@@ -70,6 +70,7 @@ namespace DwSecretNotes.EditorTools
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.OpenGLES3, GraphicsDeviceType.Vulkan });
             PlayerSettings.allowedAutorotateToPortrait = true; PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
             PlayerSettings.allowedAutorotateToLandscapeLeft = false; PlayerSettings.allowedAutorotateToLandscapeRight = false;
+            DisableHardwareStatistics();
             var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
             if (icon != null)
             {
@@ -81,6 +82,13 @@ namespace DwSecretNotes.EditorTools
                     PlayerSettings.SetPlatformIcons(nbt, kind, icons);
                 }
             }
+        }
+        static void DisableHardwareStatistics()
+        {
+            var assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
+            if (assets == null || assets.Length == 0) return;
+            var so = new SerializedObject(assets[0]); var prop = so.FindProperty("submitAnalytics");
+            if (prop != null && prop.boolValue) { prop.boolValue = false; so.ApplyModifiedPropertiesWithoutUndo(); Debug.Log("[DW] Hardware-Statistiken an Unity deaktiviert"); }
         }
         static AndroidSdkVersions HighestSdk(int max)
         {
