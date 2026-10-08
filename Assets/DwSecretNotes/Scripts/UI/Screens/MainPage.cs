@@ -181,10 +181,10 @@ namespace DwSecretNotes.UI
             var text = input.Value.Trim();
             if (text.Length == 0 && imageBytes == null) return;
             var finalText = text.Length == 0 && imageBytes != null ? " " : text;
-            isEncrypting = true; encryptBtn.Busy = true; encryptBtn.Text.text = L10n.English.Has("label_encrypting") ? L10n.T("label_encrypting") : "Encrypting…"; RefreshEncryptState();
+            isEncrypting = true; encryptBtn.Busy = true; encryptBtn.Text.text = L10n.T("label_encrypting"); RefreshEncryptState();
             EncryptResult r;
             try { r = await NoteApi.EncryptAndStore(finalText, imageBytes); }
-            catch (Exception e) { DwLog.E(Module, "encrypt", e); r = new EncryptResult { Error = "EncryptAndSend Failed" }; }
+            catch (Exception e) { DwLog.E(Module, "encrypt", e); r = new EncryptResult { Error = L10n.T("error_encrypt_failed") }; }
             if (Root.panel == null && Root.parent == null) return;
             isEncrypting = false; encryptBtn.Busy = false; encryptBtn.Text.text = L10n.T("btn_encrypt");
             if (r.Ok)

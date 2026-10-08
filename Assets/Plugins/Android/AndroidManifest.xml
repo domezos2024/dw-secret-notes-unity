@@ -4,6 +4,7 @@
     <application android:allowBackup="false" tools:replace="android:allowBackup">
         <activity
             android:name="com.snote.domezos.unity.DwActivity"
+            android:label="@string/dw_widget_app_name"
             android:theme="@style/UnityThemeSelector"
             android:exported="true"
             android:launchMode="singleTask"

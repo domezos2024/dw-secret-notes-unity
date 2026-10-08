@@ -30,14 +30,14 @@ namespace DwSecretNotes.Net
             string json;
             var pass = NoteCrypto.GeneratePassword();
             try { json = await Task.Run(() => NoteCrypto.ToJson(NoteCrypto.Encrypt(pass, text, image))); }
-            catch (Exception e) { DwLog.E(Module, "encrypt failed", e); return new EncryptResult { Error = "EncryptAndSend Failed" }; }
+            catch (Exception e) { DwLog.E(Module, "encrypt failed", e); return new EncryptResult { Error = L10n.T("error_encrypt_failed") }; }
             var ts = Timestamp(DateTime.Now);
             using var req = Req($"{Store}?action=save&ts={Uri.EscapeDataString(ts)}", UnityWebRequest.kHttpVerbPOST);
             req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json)) { contentType = "application/json" };
             req.SetRequestHeader("Content-Type", "application/json");
             await WebRequestAwaiter.Send(req);
             DwLog.Var(Module, "saveHttp", req.responseCode);
-            if (req.result != UnityWebRequest.Result.Success) return new EncryptResult { Error = req.responseCode == 429 ? "Rate limit reached. Please try again in a minute." : "Encrypt failed. Bad Internet Connection?" };
+            if (req.result != UnityWebRequest.Result.Success) return new EncryptResult { Error = L10n.T(req.responseCode == 429 ? "error_rate_limit" : "error_encrypt_network") };
             return new EncryptResult { Ok = true, Link = BuildLink(ts, pass) };
         }
         public static async Task<DecryptResult> FetchAndDecrypt(string alias, string pass)

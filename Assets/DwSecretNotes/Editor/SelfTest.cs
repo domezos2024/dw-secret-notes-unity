@@ -58,10 +58,19 @@ namespace DwSecretNotes.EditorTools
             Check("parse-short", LinkParser.ParseLocal("ABCDE", out _)?.Alias == "ABCDE");
             Check("plural-ru", L10n.PluralCategory("ru", 1) == "one" && L10n.PluralCategory("ru", 3) == "few" && L10n.PluralCategory("ru", 11) == "many" && L10n.PluralCategory("ru", 22) == "few");
             Check("plural-ar", L10n.PluralCategory("ar", 0) == "zero" && L10n.PluralCategory("ar", 2) == "two" && L10n.PluralCategory("ar", 5) == "few" && L10n.PluralCategory("ar", 15) == "many" && L10n.PluralCategory("ar", 100) == "other");
-            foreach (var l in L10n.Languages) { var t = L10n.TableFor(l.Tag); Check("l10n-" + l.Tag, t.Has("btn_encrypt") && t.Has("note_auto_delete_other")); }
+            foreach (var l in L10n.Languages) { var t = L10n.TableFor(l.Tag); Check("l10n-" + l.Tag, KeysComplete(t, l.Tag, out var miss), miss); }
             Check("theme-count", ThemeCatalog.All.Count == 17);
             Debug.Log($"[DW-TEST] RESULT fails={fails}");
         }
+        static bool KeysComplete(StringTable t, string tag, out string miss)
+        {
+            var en = UnityEngine.JsonUtility.FromJson<Keys>(UnityEngine.Resources.Load<UnityEngine.TextAsset>("i18n/en").text);
+            var m = new System.Collections.Generic.List<string>();
+            foreach (var k in en.keys) if (!k.StartsWith("note_auto_delete_") && !t.Has(k)) m.Add(k);
+            foreach (var n in new[] { 0, 1, 2, 3, 5, 11, 21, 60 }) if (!t.Has("note_auto_delete_" + L10n.PluralCategory(tag, n))) m.Add("note_auto_delete_" + L10n.PluralCategory(tag, n));
+            miss = string.Join(",", m.Distinct()); return m.Count == 0;
+        }
+        [Serializable] sealed class Keys { public string[] keys; }
         public static void RunBatch() { Run(); EditorApplication.Exit(fails == 0 ? 0 : 1); }
         public static void OnlineBatch()
         {
