@@ -24,6 +24,7 @@ namespace DwSecretNotes.UI
             c.Add(BuildHero()); c.Add(Kit.Spacer(16));
             c.Add(BuildTabs()); c.Add(Kit.Spacer(16));
             BuildEncrypt(c); BuildDecrypt(c);
+            c.Add(Kit.Spacer(16)); c.Add(DonateCard.Build(Shell));
             c.Add(Kit.Spacer(24)); c.Add(Footer.Build(Shell));
             SelectTab(false, false);
         }

@@ -3,7 +3,7 @@
 Unity-6-Neuauflage der Android-App `dw-secret-notes` (gleiche Funktionen, gleiches Backend, neue UI-Toolkit-Oberfläche).
 
 - Unity: 6000.3.25f1, UI Toolkit (komplett aus C# aufgebaut), Built-in Render Pipeline
-- Paket: `com.snote.domezos`, Version 6.0.1 (versionCode 48) – Update-Pfad der bestehenden Play-Store-App, sofern mit demselben Schlüssel signiert
+- Paket: `com.snote.domezos`, Version 6.1.1 (versionCode 50) – Update-Pfad der bestehenden Play-Store-App, sofern mit demselben Schlüssel signiert
 - Android-Quellprojekt: `E:\AndroidStudioProjects\dw-secret-notes`
 
 ## Funktionen (1:1 aus der Android-App)
@@ -14,12 +14,15 @@ Unity-6-Neuauflage der Android-App `dw-secret-notes` (gleiche Funktionen, gleich
 | Link/Alias entschlüsseln, 60-s-Countdown, Einmal-Lesen (unlink) | `UI/Screens/MainPage.cs` |
 | Kurzlinks/Redirects auflösen | `NoteApi.ResolveLink` |
 | Deep Links `https://domezos-ware.com/msges/view.php?...`, Teilen-Intent (Text) | `Plugins/Android/DwActivity.java`, `DwBridge.java`, `Core/LinkParser.cs` |
-| 15 Sprachen inkl. Plural-Regeln, RTL (ar, ur) | `Core/Localization.cs`, `Resources/i18n/*.json` |
+| 14 Sprachen inkl. Plural-Regeln, RTL (ur) | `Core/Localization.cs`, `Resources/i18n/*.json` |
 | 17 Themes (gleiche Farbableitung wie Compose) | `Core/ThemeCatalog.cs` |
 | Hilfe, Info, TinyURL, Sprache, Theme-Auswahl | `UI/Screens/*`, `UI/Shell/AppShell.cs` |
 | Homescreen-Widgets (Schnell-Verschlüsseln, Starter) | `Plugins/Android/DwNative.androidlib` |
 | Bewertungsdialog (3. Start), In-App-Review, Sterne im Footer | `MainPage.OnShow`, `ReviewHelper.java` |
 | FLAG_SECURE in Release-Builds | `DwBridge.setSecure` |
+| Spenden-Hinweis (14 Sprachen) | `UI/Screens/DonateCard.cs`; Android: Google Play Billing (`DonationHelper.java`, Produkte `donate_small`, `donate_medium`, `donate_large`, verbrauchbar), Windows: PayPal.me |
+
+Debug-Argumente (Desktop, Debug-Builds auch Android): `--lang=xx`, `--theme=id`, `--route=main|help|info|tinyUrl|language`, `--menu`, `--shot=pfad`, `--e2e` (Verschlüsseln, Kopieren, Teilen, Entschlüsseln gegen das echte Backend, Ergebnis in `persistentDataPath/e2e.txt`).
 
 Neu in der Oberfläche: animierter Aurora-Hintergrund, Glas-Karten, Tabs Verschlüsseln/Entschlüsseln, Vektor-Icons, Countdown-Ring, Einfügen aus Zwischenablage, Bildvorschau mit Vollbild, Bottom-Sheets für Menü/Themes, Akkordeon-FAQ, Toasts.
 

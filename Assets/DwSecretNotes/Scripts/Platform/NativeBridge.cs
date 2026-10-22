@@ -6,6 +6,7 @@ namespace DwSecretNotes.Platform
 {
     public enum Haptic { LongPress = 0, TextHandleMove = 9 }
     public sealed class LaunchRequest { public string Kind, Value; }
+    public sealed class DonationOffer { public string Id, Price; }
     public interface INativeBridge
     {
         void PickImage(Action<byte[]> onPicked);
@@ -20,6 +21,9 @@ namespace DwSecretNotes.Platform
         void SetWidgetLink(int widgetId, string link);
         void UpdateWidgets(ThemePalette p, string hint, string encrypt, string share, string shareMessage, string shareTitle);
         void MoveTaskToBack();
+        bool UsesPlayBilling { get; }
+        void QueryDonations(Action<DonationOffer[]> done);
+        void Donate(string productId, Action<string> done);
     }
     public static class Native
     {
@@ -37,7 +41,7 @@ namespace DwSecretNotes.Platform
     public sealed class NativeReceiver : MonoBehaviour
     {
         public const string ObjectName = "DwNative";
-        public static event Action<string> ImagePicked, ReviewDone, ShareDone, NewIntent;
+        public static event Action<string> ImagePicked, ReviewDone, ShareDone, NewIntent, DonationOffers, DonationResult;
         public static NativeReceiver Ensure()
         {
             var go = GameObject.Find(ObjectName);
@@ -48,6 +52,8 @@ namespace DwSecretNotes.Platform
         public void OnReviewDone(string s) => ReviewDone?.Invoke(s);
         public void OnShareDone(string s) => ShareDone?.Invoke(s);
         public void OnNewIntent(string s) => NewIntent?.Invoke(s);
+        public void OnDonationOffers(string s) => DonationOffers?.Invoke(s);
+        public void OnDonationResult(string s) => DonationResult?.Invoke(s);
         internal static byte[] ReadAndDelete(string path)
         {
             if (string.IsNullOrEmpty(path) || !File.Exists(path)) return null;
@@ -90,6 +96,27 @@ namespace DwSecretNotes.Platform
         public void UpdateWidgets(ThemePalette p, string hint, string encrypt, string share, string shareMessage, string shareTitle) =>
             bridge.CallStatic("updateWidgets", ColorMath.ToArgbInt(p.Background), ColorMath.ToArgbInt(p.OnSurface), ColorMath.ToArgbInt(p.Secondary), ColorMath.ToArgbInt(p.OnSecondary), hint, encrypt, share, shareMessage, shareTitle);
         public void MoveTaskToBack() => bridge.CallStatic("moveTaskToBack");
+        public bool UsesPlayBilling => true;
+        public void QueryDonations(Action<DonationOffer[]> done)
+        {
+            Action<string> h = null;
+            h = s =>
+            {
+                NativeReceiver.DonationOffers -= h;
+                var list = new System.Collections.Generic.List<DonationOffer>();
+                foreach (var part in (s ?? "").Split(';')) { int i = part.IndexOf('|'); if (i > 0) list.Add(new DonationOffer { Id = part.Substring(0, i), Price = part.Substring(i + 1) }); }
+                done(list.ToArray());
+            };
+            NativeReceiver.DonationOffers += h;
+            bridge.CallStatic("queryDonations", string.Join(",", AppInfo.DonationProducts));
+        }
+        public void Donate(string productId, Action<string> done)
+        {
+            Action<string> h = null;
+            h = s => { NativeReceiver.DonationResult -= h; done?.Invoke(s); };
+            NativeReceiver.DonationResult += h;
+            bridge.CallStatic("donate", productId);
+        }
     }
 #endif
     sealed class DesktopBridge : INativeBridge
@@ -123,6 +150,9 @@ namespace DwSecretNotes.Platform
         public void SetWidgetLink(int widgetId, string link) { }
         public void UpdateWidgets(ThemePalette p, string hint, string encrypt, string share, string shareMessage, string shareTitle) { }
         public void MoveTaskToBack() { }
+        public bool UsesPlayBilling => false;
+        public void QueryDonations(Action<DonationOffer[]> done) => done(new DonationOffer[0]);
+        public void Donate(string productId, Action<string> done) { Application.OpenURL(AppInfo.PayPalUrl); done?.Invoke("opened"); }
     }
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
     static class WinFileDialog

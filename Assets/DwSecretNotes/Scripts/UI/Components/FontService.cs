@@ -24,12 +24,25 @@ namespace DwSecretNotes.UI
             {
                 done = true;
                 var list = new List<FontAsset>();
+                // Use bundled, OFL-licensed dynamic faces before OS fallbacks. In particular
+                // NotoSansArabic is required for correct Arabic/Urdu shaping on Windows/Android.
+                foreach (var resource in new[] { "Fonts/NotoSans", "Fonts/NotoSansArabic" })
+                {
+                    try
+                    {
+                        var bundled = Resources.Load<Font>(resource);
+                        if (bundled == null) { DwLog.W("Fonts", "bundled font not found: " + resource); continue; }
+                        var face = FontAsset.CreateFontAsset(bundled);
+                        if (face != null) { face.isMultiAtlasTexturesEnabled = true; list.Add(face); DwLog.I("Fonts", "bundled " + resource); }
+                    }
+                    catch (Exception e) { DwLog.E("Fonts", "bundled " + resource, e); }
+                }
                 foreach (var f in Families)
                 {
                     try
                     {
                         var fa = FontAsset.CreateFontAsset(f[0], f[1], 90);
-                        if (fa != null) { list.Add(fa); DwLog.I("Fonts", "loaded " + f[0]); }
+                        if (fa != null) { fa.isMultiAtlasTexturesEnabled = true; list.Add(fa); DwLog.I("Fonts", "loaded " + f[0]); }
                     }
                     catch (Exception e) { DwLog.I("Fonts", "skip " + f[0] + ": " + e.Message); }
                 }

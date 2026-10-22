@@ -78,6 +78,22 @@ namespace DwSecretNotes.UI
                 }
             }
             catch (System.Exception e) { R("exception", false, e.ToString()); }
+            try
+            {
+                DonationOffer[] offers = null;
+                Native.I.QueryDonations(o => offers = o);
+                for (int i = 0; i < 100 && offers == null; i++) await System.Threading.Tasks.Task.Delay(100);
+                R("donate-query", offers != null, offers == null ? "timeout" : string.Join(",", System.Array.ConvertAll(offers, x => x.Id + "=" + x.Price)));
+                if (Native.I.UsesPlayBilling)
+                {
+                    string bad = null; Native.I.Donate("donate_unknown_product", r => bad = r);
+                    for (int i = 0; i < 50 && bad == null; i++) await System.Threading.Tasks.Task.Delay(100);
+                    R("donate-unknown-product", bad == "error", bad);
+                }
+                else R("donate-paypal-url", AppInfo.PayPalUrl.StartsWith("https://www.paypal.com/"), AppInfo.PayPalUrl);
+                foreach (var l in L10n.Languages) R("donate-i18n-" + l.Tag, L10n.TableFor(l.Tag) != null);
+            }
+            catch (System.Exception e) { R("donate-exception", false, e.ToString()); }
             sb.AppendLine("RESULT " + (all ? "PASS" : "FAIL"));
             System.IO.File.WriteAllText(System.IO.Path.Combine(Application.persistentDataPath, "e2e.txt"), sb.ToString());
             if (!Application.isMobilePlatform) Invoke(nameof(Quit), 0.5f);
@@ -95,7 +111,7 @@ namespace DwSecretNotes.UI
         string shotPath; float shotAt = -1; bool shotDone;
         void DebugCapture()
         {
-            if (shotDone || Application.isMobilePlatform) return;
+            if (shotDone || (Application.isMobilePlatform && !Debug.isDebugBuild)) return;
             if (shotAt < 0)
             {
                 shotAt = float.MaxValue;
@@ -111,7 +127,7 @@ namespace DwSecretNotes.UI
                 }
                 if (shotPath != null && shotAt == float.MaxValue) shotAt = 3;
             }
-            if (shotPath != null && Time.realtimeSinceStartup >= shotAt) { shotDone = true; ScreenCapture.CaptureScreenshot(shotPath); Invoke(nameof(Quit), 1.5f); }
+            if (shotPath != null && !Application.isMobilePlatform && Time.realtimeSinceStartup >= shotAt) { shotDone = true; ScreenCapture.CaptureScreenshot(shotPath); Invoke(nameof(Quit), 1.5f); }
         }
         void Quit() => Application.Quit();
         void OnApplicationFocus(bool focus) { if (focus && shell != null) HandleLaunch(); }

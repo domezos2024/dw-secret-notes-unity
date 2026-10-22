@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 import android.view.WindowManager;
+import com.snote.domezos.nativelib.DonationHelper;
 import com.snote.domezos.nativelib.ImagePickActivity;
 import com.snote.domezos.nativelib.LauncherWidgetProvider;
 import com.snote.domezos.nativelib.ReviewHelper;
@@ -98,6 +99,14 @@ public final class DwBridge {
         Context c = act().getApplicationContext();
         WidgetStore.saveStyle(c, bg, on, sec, onSec, hint, encrypt, share, shareMsg, shareTitle);
         LauncherWidgetProvider.refreshAll(c);
+    }
+
+    public static void queryDonations(String ids) {
+        DonationHelper.query(act(), ids.split(","), offers -> send("OnDonationOffers", offers));
+    }
+
+    public static void donate(String id) {
+        DonationHelper.donate(act(), id, res -> send("OnDonationResult", res));
     }
 
     public static void moveTaskToBack() { act().moveTaskToBack(true); }

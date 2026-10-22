@@ -57,7 +57,7 @@ namespace DwSecretNotes.EditorTools
             Check("parse-local", pr.HasValue && pr.Value.Alias == "17.08.2026_04-15-16-700" && pr.Value.Pass == "55");
             Check("parse-short", LinkParser.ParseLocal("ABCDE", out _)?.Alias == "ABCDE");
             Check("plural-ru", L10n.PluralCategory("ru", 1) == "one" && L10n.PluralCategory("ru", 3) == "few" && L10n.PluralCategory("ru", 11) == "many" && L10n.PluralCategory("ru", 22) == "few");
-            Check("plural-ar", L10n.PluralCategory("ar", 0) == "zero" && L10n.PluralCategory("ar", 2) == "two" && L10n.PluralCategory("ar", 5) == "few" && L10n.PluralCategory("ar", 15) == "many" && L10n.PluralCategory("ar", 100) == "other");
+            Check("no-arabic", L10n.Languages.All(l => l.Tag != "ar") && L10n.Languages.Count() == 14, L10n.Languages.Count().ToString());
             foreach (var l in L10n.Languages) { var t = L10n.TableFor(l.Tag); Check("l10n-" + l.Tag, KeysComplete(t, l.Tag, out var miss), miss); }
             Check("theme-count", ThemeCatalog.All.Count == 17);
             Debug.Log($"[DW-TEST] RESULT fails={fails}");

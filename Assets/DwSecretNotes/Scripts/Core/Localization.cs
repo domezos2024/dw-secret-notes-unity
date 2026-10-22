@@ -33,7 +33,7 @@ namespace DwSecretNotes.Core
         {
             new LanguageOption("en", "English", "English"), new LanguageOption("de", "Deutsch", "German"),
             new LanguageOption("es", "Español", "Spanish"), new LanguageOption("zh-CN", "中文", "Chinese (Simplified)"),
-            new LanguageOption("hi", "हिन्दी", "Hindi"), new LanguageOption("ar", "العربية", "Arabic"),
+            new LanguageOption("hi", "हिन्दी", "Hindi"),
             new LanguageOption("pt", "Português", "Portuguese"), new LanguageOption("bn", "বাংলা", "Bengali"),
             new LanguageOption("ru", "Русский", "Russian"), new LanguageOption("ja", "日本語", "Japanese"),
             new LanguageOption("fr", "Français", "French"), new LanguageOption("ur", "اردو", "Urdu"),
@@ -44,7 +44,7 @@ namespace DwSecretNotes.Core
         public static event Action Changed;
         public static string CurrentTag => current?.Tag ?? "en";
         public static bool IsRtl => IsRtlTag(CurrentTag);
-        public static bool IsRtlTag(string tag) => tag == "ar" || tag == "ur";
+        public static bool IsRtlTag(string tag) => tag == "ur";
         public static StringTable English => english ??= StringTable.Load("en", null);
         public static StringTable TableFor(string tag) => tag == "en" ? English : StringTable.Load(tag, English);
         public static void Init(string tag)
@@ -69,7 +69,7 @@ namespace DwSecretNotes.Core
             {
                 case SystemLanguage.German: return "de"; case SystemLanguage.Spanish: return "es";
                 case SystemLanguage.Chinese: case SystemLanguage.ChineseSimplified: case SystemLanguage.ChineseTraditional: return "zh-CN";
-                case SystemLanguage.Hindi: return "hi"; case SystemLanguage.Arabic: return "ar"; case SystemLanguage.Portuguese: return "pt";
+                case SystemLanguage.Hindi: return "hi"; case SystemLanguage.Portuguese: return "pt";
                 case SystemLanguage.Russian: return "ru"; case SystemLanguage.Japanese: return "ja"; case SystemLanguage.French: return "fr";
                 case SystemLanguage.Indonesian: return "id"; case SystemLanguage.Korean: return "ko"; case SystemLanguage.Italian: return "it";
                 default: return "en";
@@ -94,8 +94,7 @@ namespace DwSecretNotes.Core
                 case "fr": case "pt": return n == 0 || n == 1 ? "one" : "other";
                 case "hi": case "bn": return n == 0 || n == 1 ? "one" : "other";
                 case "ru": return m10 == 1 && m100 != 11 ? "one" : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? "few" : "many";
-                case "ar": return n == 0 ? "zero" : n == 1 ? "one" : n == 2 ? "two" : m100 >= 3 && m100 <= 10 ? "few" : m100 >= 11 ? "many" : "other";
-                default: return n == 1 ? "one" : "other";
+               default: return n == 1 ? "one" : "other";
             }
         }
     }

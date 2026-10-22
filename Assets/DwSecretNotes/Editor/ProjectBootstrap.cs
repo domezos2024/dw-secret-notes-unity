@@ -108,6 +108,8 @@ namespace DwSecretNotes.EditorTools
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path)));
             EditorUserBuildSettings.buildAppBundle = bundle;
             EditorUserBuildSettings.development = development;
+            var previousArchitectures = PlayerSettings.Android.targetArchitectures;
+            if (development) PlayerSettings.Android.targetArchitectures = AndroidArchitecture.X86_64;
             ConfigureSigning();
             try
             {
@@ -115,7 +117,7 @@ namespace DwSecretNotes.EditorTools
                 if (ok) CopyReleaseArtifacts(path);
                 return ok;
             }
-            finally { ClearSigning(); }
+            finally { ClearSigning(); PlayerSettings.Android.targetArchitectures = previousArchitectures; AssetDatabase.SaveAssets(); }
         }
         static bool BuildWindows(string path, bool development)
         {

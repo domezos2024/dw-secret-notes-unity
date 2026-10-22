@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 namespace DwSecretNotes.UI
 {
-    public enum IconKind { Lock, Unlock, Copy, Share, Image, Plus, Close, Check, Back, Menu, Star, Palette, Info, Globe, Help, Link, Paste, Shield, External, Sparkle }
+    public enum IconKind { Lock, Unlock, Copy, Share, Image, Plus, Close, Check, Back, Menu, Star, Palette, Info, Globe, Help, Link, Paste, Shield, External, Sparkle, Heart }
     public sealed class Icon : VisualElement
     {
         IconKind kind; Color tint = Color.white;
@@ -67,6 +67,8 @@ namespace DwSecretNotes.UI
                 case IconKind.External:
                     p.BeginPath(); p.MoveTo(P(11, 4)); p.LineTo(P(6, 4)); p.ArcTo(P(4, 4), P(4, 6), 2 * s); p.LineTo(P(4, 18)); p.ArcTo(P(4, 20), P(6, 20), 2 * s); p.LineTo(P(18, 20)); p.ArcTo(P(20, 20), P(20, 18), 2 * s); p.LineTo(P(20, 13)); p.Stroke();
                     Line(13, 11, 20, 4); p.BeginPath(); p.MoveTo(P(14.5f, 4)); p.LineTo(P(20, 4)); p.LineTo(P(20, 9.5f)); p.Stroke(); break;
+                case IconKind.Heart:
+                    p.BeginPath(); p.MoveTo(P(12, 20.5f)); p.BezierCurveTo(P(3, 14), P(2.5f, 8), P(7, 6)); p.BezierCurveTo(P(9.5f, 5), P(11.5f, 6), P(12, 8)); p.BezierCurveTo(P(12.5f, 6), P(14.5f, 5), P(17, 6)); p.BezierCurveTo(P(21.5f, 8), P(21, 14), P(12, 20.5f)); p.ClosePath(); p.Fill(); break;
                 case IconKind.Sparkle:
                     p.BeginPath(); p.MoveTo(P(12, 2)); p.BezierCurveTo(P(13, 9), P(15, 11), P(22, 12)); p.BezierCurveTo(P(15, 13), P(13, 15), P(12, 22)); p.BezierCurveTo(P(11, 15), P(9, 13), P(2, 12)); p.BezierCurveTo(P(9, 11), P(11, 9), P(12, 2)); p.ClosePath(); p.Fill(); break;
             }
