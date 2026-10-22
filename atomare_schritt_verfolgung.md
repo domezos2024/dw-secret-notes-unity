@@ -14,4 +14,4 @@
 - [x] 12. E2E-Test (--e2e) Windows + Android: verschluesseln+Bild, kopieren, teilen, entschluesseln, Einmal-Lesen, spenden
 - [x] 13. Version 6.1.1 (50), Arabisch entfernt, Versionshinweise 35 Sprachen (Builds/Android/Play-6.1.1-50)
 - [x] 14. E2E inkl. Spenden: Windows PASS, Pixel 10 PASS (Preise 2,39/5,99/11,99 EUR)
-- [ ] 15. Release-AAB signiert, Commit
+- [x] 15. Release-AAB mit Upload-Schluessel signiert (Builds/Android/Play-6.1.1-50), Altlasten aufgeraeumt, Commit+Push
