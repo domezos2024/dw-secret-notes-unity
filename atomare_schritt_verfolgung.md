@@ -1,0 +1,13 @@
+# Verifikation Android + Windows (Start 02:16 Berlin)
+- [x] 1. Code-Analyse (Bridge, Shell, Screens, i18n)
+- [x] 2. Fix: Windows-Bildauswahl (Win32 Dateidialog)
+- [x] 3. Fix: Teilen-Fallback (kopieren + Toast) in MainPage/QuickEncryptSheet
+- [x] 4. Fix: Desktop-Launch-Request nur einmal verbrauchen (Fokus-Loop)
+- [x] 5. Debug-Args --lang/--theme fuer Screenshot-Matrix
+- [x] 6. SelfTest (Krypto, Parser, Sprachen) + Online-Test
+- [x] 7. Windows-Build + Screenshots: 15 Sprachen x Routen, 17 Themes
+- [x] 8. Screenshots auswerten (RTL, CJK, Abschneiden, Kontrast)
+- [ ] 9. Android: Geraet/Emulator, APK-Build, Funktionstest
+- [ ] 10. Commit
+- [ ] 11. RTL-Shaping (ar/ur) fixen: -unity-text-generator auf alle Text-Elemente, Win-Rebuild, ar-Screenshot pruefen
+- [ ] 12. E2E-Test (--e2e) Windows + Android: verschluesseln+Bild, kopieren, teilen, entschluesseln, Einmal-Lesen

@@ -19,7 +19,7 @@ namespace DwSecretNotes.UI
             ThemeBinder.On(pill, (e, p) => { e.style.backgroundColor = p.SurfaceVariant; ThemeBinder.Border(e, ThemeBinder.A(p.Primary, 0.3f)); });
             result.Add(Kit.Banner(L10n.T("success_encrypted"), true)); result.Add(Kit.Spacer(10)); result.Add(pill); result.Add(Kit.Spacer(12));
             string generated = null;
-            var share = new DwButton(L10n.T("btn_share"), IconKind.Share, BtnKind.Primary, () => { if (generated != null) Native.I.ShareText(L10n.T("share_message", generated), L10n.T("share_title"), ok => { if (!ok) shell.Toast(L10n.T("error_share_unavailable")); }); });
+            var share = new DwButton(L10n.T("btn_share"), IconKind.Share, BtnKind.Primary, () => { if (generated != null) Native.I.ShareText(L10n.T("share_message", generated), L10n.T("share_title"), ok => { if (!ok) { Native.I.CopyText(generated); shell.Toast(L10n.T("snackbar_link_copied")); } }); });
             var copy = new DwButton(L10n.T("btn_copy"), IconKind.Copy, BtnKind.Tonal, () => { if (generated != null) { Native.I.CopyText(generated); shell.Toast(L10n.T("snackbar_link_copied")); } });
             var row = Kit.Row(); row.AddToClassList("dw-gap-row"); copy.style.flexGrow = 1; copy.style.flexBasis = 0; share.style.flexGrow = 1; share.style.flexBasis = 0; row.Add(copy); row.Add(share); result.Add(row);
             var error = Kit.Col();

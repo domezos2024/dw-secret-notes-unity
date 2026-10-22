@@ -205,7 +205,7 @@ namespace DwSecretNotes.UI
         {
             if (string.IsNullOrEmpty(generatedLink)) return;
             var link = generatedLink;
-            Native.I.ShareText(L10n.T("share_message", link), L10n.T("share_title"), ok => { if (!ok) Shell.Toast(L10n.T("error_share_unavailable")); });
+            Native.I.ShareText(L10n.T("share_message", link), L10n.T("share_title"), ok => { if (!ok) { Native.I.CopyText(link); Shell.Toast(L10n.T("snackbar_link_copied")); } });
             ConsumeLink();
         }
         void ConsumeLink() { generatedLink = ""; linkLabel.text = ""; copyBtn.SetEnabled(false); shareBtn.SetEnabled(false); }

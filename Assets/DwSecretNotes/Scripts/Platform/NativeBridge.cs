@@ -99,18 +99,23 @@ namespace DwSecretNotes.Platform
 #if UNITY_EDITOR
             var path = UnityEditor.EditorUtility.OpenFilePanel("Image", "", "png,jpg,jpeg");
             onPicked(string.IsNullOrEmpty(path) ? null : ImageCodec.PrepareForUpload(File.ReadAllBytes(path)));
+#elif UNITY_STANDALONE_WIN
+            try { var path = WinFileDialog.OpenImage(); onPicked(string.IsNullOrEmpty(path) ? null : ImageCodec.PrepareForUpload(File.ReadAllBytes(path))); }
+            catch (Exception e) { DwLog.E("Native", "image dialog failed", e); onPicked(null); }
 #else
             DwLog.W("Native", "image picker not available on this platform"); onPicked(null);
 #endif
         }
-        public void ShareText(string text, string title, Action<bool> done) { GUIUtility.systemCopyBuffer = text; done?.Invoke(false); }
+        public void ShareText(string text, string title, Action<bool> done) => done?.Invoke(false);
         public void CopyText(string text) => GUIUtility.systemCopyBuffer = text;
         public string ReadClipboard() => GUIUtility.systemCopyBuffer ?? "";
         public void OpenUrl(string url) => Application.OpenURL(url);
         public void Haptic(Haptic h) { }
         public void SetSecure(bool secure) { }
+        static bool launchConsumed;
         public LaunchRequest ConsumeLaunchRequest()
         {
+            if (launchConsumed) return null; launchConsumed = true;
             foreach (var a in Environment.GetCommandLineArgs()) if (a.StartsWith("--open=")) return new LaunchRequest { Kind = "view", Value = a.Substring(7) };
             return null;
         }
@@ -119,6 +124,33 @@ namespace DwSecretNotes.Platform
         public void UpdateWidgets(ThemePalette p, string hint, string encrypt, string share, string shareMessage, string shareTitle) { }
         public void MoveTaskToBack() { }
     }
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+    static class WinFileDialog
+    {
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        struct Ofn
+        {
+            public int lStructSize; public IntPtr hwndOwner, hInstance; public string lpstrFilter, lpstrCustomFilter; public int nMaxCustFilter, nFilterIndex;
+            public IntPtr lpstrFile; public int nMaxFile; public string lpstrFileTitle; public int nMaxFileTitle; public string lpstrInitialDir, lpstrTitle; public int Flags;
+            public short nFileOffset, nFileExtension; public string lpstrDefExt; public IntPtr lCustData, lpfnHook; public string lpTemplateName; public IntPtr pvReserved; public int dwReserved, FlagsEx;
+        }
+        [System.Runtime.InteropServices.DllImport("comdlg32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)] static extern bool GetOpenFileNameW(ref Ofn o);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr GetActiveWindow();
+        public static string OpenImage()
+        {
+            const int Max = 1040;
+            var buf = System.Runtime.InteropServices.Marshal.AllocHGlobal(Max * 2);
+            try
+            {
+                System.Runtime.InteropServices.Marshal.WriteInt16(buf, 0);
+                var o = new Ofn { hwndOwner = GetActiveWindow(), lpstrFilter = "PNG / JPEG\0*.png;*.jpg;*.jpeg\0\0", nFilterIndex = 1, lpstrFile = buf, nMaxFile = Max, Flags = 0x80000 | 0x1000 | 0x800 | 0x8 };
+                o.lStructSize = System.Runtime.InteropServices.Marshal.SizeOf(o);
+                return GetOpenFileNameW(ref o) ? System.Runtime.InteropServices.Marshal.PtrToStringUni(buf) : null;
+            }
+            finally { System.Runtime.InteropServices.Marshal.FreeHGlobal(buf); }
+        }
+    }
+#endif
     public static class ImageCodec
     {
         public static byte[] PrepareForUpload(byte[] src)

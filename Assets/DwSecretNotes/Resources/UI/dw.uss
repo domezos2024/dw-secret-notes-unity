@@ -1,3 +1,4 @@
+.dw-root Label, .dw-root TextElement, .dw-root Button, .dw-root TextField { -unity-text-generator: advanced; }
 .dw-root { flex-grow: 1; font-size: 15px; -unity-text-generator: advanced; }
 .dw-root Label { white-space: normal; }
 .dw-aurora { position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; }

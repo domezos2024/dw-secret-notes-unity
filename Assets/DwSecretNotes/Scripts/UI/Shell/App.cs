@@ -1,4 +1,5 @@
 using DwSecretNotes.Core;
+using DwSecretNotes.Net;
 using DwSecretNotes.Platform;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -38,11 +39,48 @@ namespace DwSecretNotes.UI
             var root = doc.rootVisualElement;
             root.styleSheets.Add(Resources.Load<StyleSheet>("UI/dw"));
             FontService.Apply(root, ps);
+            root.style.unityTextGenerator = new StyleEnum<TextGeneratorType>(TextGeneratorType.Advanced);
+            DwLog.I(Module, "textGenerator=" + root.resolvedStyle.unityTextGenerator);
             ThemeBinder.On(root, (e, p) => { ps.colorClearValue = p.Background; cam.backgroundColor = p.Background; });
             shell = new AppShell(root, firstRun) { ShowRatePrompt = showRate };
             Native.I.SetSecure(!Debug.isDebugBuild);
             PushWidgetStyle();
             HandleLaunch();
+            if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "--e2e") >= 0) E2E();
+        }
+        async void E2E()
+        {
+            var sb = new System.Text.StringBuilder(); bool all = true;
+            void R(string n, bool ok, string d = "") { all &= ok; var l = $"{(ok ? "PASS" : "FAIL")} {n} {d}"; sb.AppendLine(l); DwLog.I(Module, "e2e " + l); }
+            try
+            {
+                var text = "e2e äöü 秘密 ✓ " + System.DateTime.Now.Ticks;
+                var tex = new Texture2D(96, 64, TextureFormat.RGB24, false);
+                for (int y = 0; y < 64; y++) for (int x = 0; x < 96; x++) tex.SetPixel(x, y, new Color(x / 96f, y / 64f, 0.5f));
+                tex.Apply(); var img = tex.EncodeToJPG(80); Destroy(tex);
+                var enc = await NoteApi.EncryptAndStore(text, img); R("encrypt", enc.Ok, enc.Error);
+                if (enc.Ok)
+                {
+                    Native.I.CopyText(enc.Link); await System.Threading.Tasks.Task.Delay(700);
+                    var clip = Native.I.ReadClipboard(); R("copy-clipboard", clip == enc.Link, clip);
+                    bool shareCalled = false; bool? shareOk = null;
+                    Native.I.ShareText(L10n.T("share_message", enc.Link), L10n.T("share_title"), ok => { shareCalled = true; shareOk = ok; });
+                    R("share-callback", shareCalled || Application.isMobilePlatform, shareOk.ToString());
+                    var res = await NoteApi.ResolveLink(clip); R("resolve", res.HasValue);
+                    if (res.HasValue)
+                    {
+                        var dec = await NoteApi.FetchAndDecrypt(res.Value.Alias, res.Value.Pass);
+                        R("decrypt-text", dec.Status == DecryptStatus.Ok && dec.Note.Text == text, dec.Status.ToString());
+                        R("decrypt-image", dec.Note?.Image != null && System.Linq.Enumerable.SequenceEqual(dec.Note.Image, img), dec.Note?.Image?.Length.ToString());
+                        await System.Threading.Tasks.Task.Delay(1500);
+                        var again = await NoteApi.FetchAndDecrypt(res.Value.Alias, res.Value.Pass); R("one-time-read", again.Status == DecryptStatus.NotFound, again.Status.ToString());
+                    }
+                }
+            }
+            catch (System.Exception e) { R("exception", false, e.ToString()); }
+            sb.AppendLine("RESULT " + (all ? "PASS" : "FAIL"));
+            System.IO.File.WriteAllText(System.IO.Path.Combine(Application.persistentDataPath, "e2e.txt"), sb.ToString());
+            if (!Application.isMobilePlatform) Invoke(nameof(Quit), 0.5f);
         }
         void Update()
         {
@@ -66,6 +104,8 @@ namespace DwSecretNotes.UI
                     if (a.StartsWith("--shot=")) shotPath = a.Substring(7);
                     else if (a.StartsWith("--at=") && float.TryParse(a.Substring(5), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var t)) shotAt = t;
                     else if (a.StartsWith("--route=")) shell.Navigate(a.Substring(8), false);
+                    else if (a.StartsWith("--lang=")) { L10n.Init(a.Substring(7)); shell.Rebuild(); }
+                    else if (a.StartsWith("--theme=")) ThemeBinder.Set(ThemeCatalog.Get(a.Substring(8)));
                     else if (a == "--menu") shell.ShowMenu();
                     else if (a == "--themes") shell.ShowThemeSheet();
                 }
