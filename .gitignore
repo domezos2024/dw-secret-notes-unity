@@ -9,6 +9,9 @@
 *.csproj
 *.sln
 *.slnx
+!/Assembly-CSharp.csproj
+!/Assembly-CSharp-Editor.csproj
+!/dw-secret-notes-unity.slnx
 .vs/
 .idea/
 *.apk
