@@ -3,11 +3,13 @@ using System;
 using System.IO;
 using System.Linq;
 using DwSecretNotes.Core;
+using DwSecretNotes.Bootstrap;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 namespace DwSecretNotes.EditorTools
@@ -17,16 +19,58 @@ namespace DwSecretNotes.EditorTools
     {
         const string ScenePath = "Assets/Scenes/Main.unity";
         const string IconPath = "Assets/DwSecretNotes/Branding/app_icon.png";
+        const string FontFolder = "Assets/DwSecretNotes/Fonts";
+        const string PrimaryFontPath = FontFolder + "/NotoSans.ttf";
+        const string ArabicFontPath = FontFolder + "/NotoSansArabic.ttf";
+        const string PrimaryFontAssetPath = FontFolder + "/NotoSans SDF.asset";
+        const string ArabicFontAssetPath = FontFolder + "/NotoSansArabic SDF.asset";
         const string ProductName = "dw Secret Notes";
         static ProjectBootstrap() { EditorApplication.delayCall += () => Setup(false); }
         [MenuItem("dw Secret Notes/Projekt einrichten", priority = 1)] static void SetupMenu() => Setup(true, true);
+        public static void SetupForBatch() => Setup(false, true);
         static void Setup(bool verbose, bool force = false)
         {
             if (!force && (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling || EditorApplication.isUpdating)) { EditorApplication.delayCall += () => Setup(verbose); return; }
-            try { EnsureScene(); EnsurePlayerSettings(); if (verbose) Debug.Log("[DW] Projekt eingerichtet."); }
+            try
+            {
+                var fonts = EnsureFonts();
+                EnsureScene(fonts.primary, fonts.arabic);
+                EnsurePlayerSettings();
+                if (verbose) Debug.Log("[DW] Projekt eingerichtet.");
+            }
             catch (Exception e) { Debug.LogException(e); }
         }
-        static void EnsureScene()
+        static (FontAsset primary, FontAsset arabic) EnsureFonts()
+        {
+            var primary = EnsureFontAsset(PrimaryFontPath, PrimaryFontAssetPath);
+            var arabic = EnsureFontAsset(ArabicFontPath, ArabicFontAssetPath);
+            primary.fallbackFontAssetTable ??= new System.Collections.Generic.List<FontAsset>();
+            if (!primary.fallbackFontAssetTable.Contains(arabic)) primary.fallbackFontAssetTable.Add(arabic);
+            EditorUtility.SetDirty(primary);
+            AssetDatabase.SaveAssets();
+            return (primary, arabic);
+        }
+        static FontAsset EnsureFontAsset(string fontPath, string assetPath)
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<FontAsset>(assetPath);
+            if (asset != null) return asset;
+            var source = AssetDatabase.LoadAssetAtPath<Font>(fontPath);
+            if (source == null) throw new FileNotFoundException("Bundled font is missing: " + fontPath);
+            asset = FontAsset.CreateFontAsset(source);
+            if (asset == null) throw new InvalidOperationException("Could not generate TextCore font asset from " + fontPath);
+            asset.name = Path.GetFileNameWithoutExtension(assetPath);
+            asset.isMultiAtlasTexturesEnabled = true;
+            AssetDatabase.CreateAsset(asset, assetPath);
+            if (asset.atlasTextures != null)
+                foreach (var texture in asset.atlasTextures)
+                    if (texture != null && !AssetDatabase.Contains(texture)) AssetDatabase.AddObjectToAsset(texture, asset);
+            if (asset.material != null && !AssetDatabase.Contains(asset.material)) AssetDatabase.AddObjectToAsset(asset.material, asset);
+            EditorUtility.SetDirty(asset);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[DW] TextCore font asset generated: " + assetPath);
+            return asset;
+        }
+        static void EnsureScene(FontAsset primaryFont, FontAsset arabicFont)
         {
             if (!File.Exists(ScenePath))
             {
@@ -37,6 +81,48 @@ namespace DwSecretNotes.EditorTools
                 EditorSceneManager.SaveScene(scene, ScenePath);
                 if (!emptyUntitled) EditorSceneManager.CloseScene(scene, true);
                 Debug.Log("[DW] Startszene angelegt: " + ScenePath);
+            }
+            var loadedScene = SceneManager.GetSceneByPath(ScenePath);
+            bool openedHere = !loadedScene.IsValid() || !loadedScene.isLoaded;
+            var sceneToEdit = openedHere ? EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Additive) : loadedScene;
+            bool sceneChanged = false;
+            try
+            {
+                AppBootstrap bootstrap = null;
+                foreach (var root in sceneToEdit.GetRootGameObjects())
+                {
+                    bootstrap = root.GetComponentInChildren<AppBootstrap>(true);
+                    if (bootstrap != null) break;
+                }
+                if (bootstrap == null)
+                {
+                    var go = new GameObject("DwApp");
+                    SceneManager.MoveGameObjectToScene(go, sceneToEdit);
+                    bootstrap = go.AddComponent<AppBootstrap>();
+                    sceneChanged = true;
+                }
+                var serialized = new SerializedObject(bootstrap);
+                var primaryProperty = serialized.FindProperty("primaryFont");
+                var arabicProperty = serialized.FindProperty("arabicFont");
+                if (primaryProperty == null || arabicProperty == null)
+                    throw new InvalidOperationException("AppBootstrap font references are not serialized as expected.");
+                if (primaryProperty.objectReferenceValue != primaryFont || arabicProperty.objectReferenceValue != arabicFont)
+                {
+                    primaryProperty.objectReferenceValue = primaryFont;
+                    arabicProperty.objectReferenceValue = arabicFont;
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                    sceneChanged = true;
+                }
+                if (sceneChanged)
+                {
+                    EditorSceneManager.MarkSceneDirty(sceneToEdit);
+                    EditorSceneManager.SaveScene(sceneToEdit);
+                    Debug.Log("[DW] Startszene mit Bootstrap und FontAssets aktualisiert: " + ScenePath);
+                }
+            }
+            finally
+            {
+                if (openedHere) EditorSceneManager.CloseScene(sceneToEdit, true);
             }
             var scenes = EditorBuildSettings.scenes.ToList();
             if (!scenes.Any(s => s.path == ScenePath)) { scenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true)); EditorBuildSettings.scenes = scenes.ToArray(); }

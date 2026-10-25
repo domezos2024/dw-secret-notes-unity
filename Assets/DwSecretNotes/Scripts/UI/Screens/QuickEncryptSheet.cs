@@ -1,5 +1,4 @@
 using DwSecretNotes.Core;
-using DwSecretNotes.Net;
 using DwSecretNotes.Platform;
 using UnityEngine.UIElements;
 namespace DwSecretNotes.UI
@@ -12,7 +11,7 @@ namespace DwSecretNotes.UI
             var s = Kit.Col(); s.Add(AppShell.SheetHandle());
             var head = Kit.Row(); head.AddToClassList("dw-gap-row");
             head.Add(Kit.Icon(IconKind.Lock, 22, p => p.Secondary)); head.Add(Kit.Text(L10n.T("btn_encrypt"), "dw-h2", p => p.OnSurface)); s.Add(head); s.Add(Kit.Spacer(12));
-            var field = new DwField(L10n.T("hint_enter_text"), true); s.Add(field); s.Add(Kit.Spacer(12));
+            var field = new DwField(L10n.T("hint_enter_text"), true, true); s.Add(field); s.Add(Kit.Spacer(12));
             var result = Kit.Col(); result.style.display = DisplayStyle.None;
             var link = Kit.Text("", "dw-linkpill__text", p => p.OnSurface);
             var pill = Kit.Row(); pill.AddToClassList("dw-linkpill"); pill.Add(Kit.Icon(IconKind.Link, 18, p => p.Primary)); pill.Add(link); link.style.flexGrow = 1; link.style.flexShrink = 1;
@@ -28,7 +27,7 @@ namespace DwSecretNotes.UI
             {
                 var text = field.Value.Trim(); if (text.Length == 0) return;
                 encrypt.Busy = true; error.Clear();
-                var r = await NoteApi.EncryptAndStore(text, null);
+                var r = await shell.Notes.EncryptAndStore(text, null);
                 encrypt.Busy = false;
                 if (!r.Ok) { var b = Kit.Banner(r.Error, false); b.style.marginTop = 10; error.Add(b); return; }
                 generated = r.Link; link.text = r.Link;
@@ -39,7 +38,6 @@ namespace DwSecretNotes.UI
             s.Add(encrypt); s.Add(error); s.Add(result);
             ThemeBinder.On(s, (e, p) => e.style.backgroundColor = p.Surface);
             shell.OpenOverlay(s, null, true);
-            s.schedule.Execute(() => field.Input.Focus()).StartingIn(300);
         }
     }
 }

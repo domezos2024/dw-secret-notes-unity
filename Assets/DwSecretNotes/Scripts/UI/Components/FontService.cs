@@ -8,53 +8,52 @@ namespace DwSecretNotes.UI
 {
     public static class FontService
     {
-        static readonly string[][] Families =
+        static FontAsset primary, arabic;
+        static readonly Dictionary<string, FontAsset> fallbackCache = new Dictionary<string, FontAsset>();
+        public static void Apply(VisualElement root, FontAsset primaryAsset, FontAsset arabicAsset, string languageTag)
         {
-            new[] { "Roboto", "Regular" }, new[] { "Segoe UI", "Regular" }, new[] { "Noto Sans", "Regular" },
-            new[] { "Noto Sans CJK JP", "Regular" }, new[] { "Noto Sans CJK SC", "Regular" }, new[] { "Microsoft YaHei", "Regular" }, new[] { "Yu Gothic", "Regular" }, new[] { "Malgun Gothic", "Regular" },
-            new[] { "Noto Naskh Arabic", "Regular" }, new[] { "Noto Sans Arabic", "Regular" }, new[] { "Noto Nastaliq Urdu", "Regular" }, new[] { "Arial", "Regular" },
-            new[] { "Noto Sans Devanagari", "Regular" }, new[] { "Noto Sans Bengali", "Regular" }, new[] { "Nirmala UI", "Regular" },
-            new[] { "Noto Sans Symbols", "Regular" }, new[] { "Noto Sans Symbols 2", "Regular" }, new[] { "Segoe UI Symbol", "Regular" }
-        };
-        static FontAsset primary;
-        static bool done;
-        public static void Apply(VisualElement root, PanelSettings ps)
+            primary = primaryAsset;
+            arabic = arabicAsset;
+            ApplyLanguage(root, languageTag);
+        }
+        public static void ApplyLanguage(VisualElement root, string languageTag)
         {
-            if (!done)
+            if (primary == null)
             {
-                done = true;
-                var list = new List<FontAsset>();
-                // Use bundled, OFL-licensed dynamic faces before OS fallbacks. In particular
-                // NotoSansArabic is required for correct Arabic/Urdu shaping on Windows/Android.
-                foreach (var resource in new[] { "Fonts/NotoSans", "Fonts/NotoSansArabic" })
-                {
-                    try
-                    {
-                        var bundled = Resources.Load<Font>(resource);
-                        if (bundled == null) { DwLog.W("Fonts", "bundled font not found: " + resource); continue; }
-                        var face = FontAsset.CreateFontAsset(bundled);
-                        if (face != null) { face.isMultiAtlasTexturesEnabled = true; list.Add(face); DwLog.I("Fonts", "bundled " + resource); }
-                    }
-                    catch (Exception e) { DwLog.E("Fonts", "bundled " + resource, e); }
-                }
-                foreach (var f in Families)
-                {
-                    try
-                    {
-                        var fa = FontAsset.CreateFontAsset(f[0], f[1], 90);
-                        if (fa != null) { fa.isMultiAtlasTexturesEnabled = true; list.Add(fa); DwLog.I("Fonts", "loaded " + f[0]); }
-                    }
-                    catch (Exception e) { DwLog.I("Fonts", "skip " + f[0] + ": " + e.Message); }
-                }
-                if (list.Count > 0)
-                {
-                    primary = list[0];
-                    primary.fallbackFontAssetTable ??= new List<FontAsset>();
-                    for (int i = 1; i < list.Count; i++) primary.fallbackFontAssetTable.Add(list[i]);
-                }
-                DwLog.Var("Fonts", "count", list.Count);
+                DwLog.W("Fonts", "Noto Sans font asset is not assigned to AppBootstrap");
+                return;
             }
-            if (primary != null) root.style.unityFontDefinition = new StyleFontDefinition(FontDefinition.FromSDFFont(primary));
+            primary.fallbackFontAssetTable = new List<FontAsset>();
+            if (arabic != null) primary.fallbackFontAssetTable.Add(arabic);
+            foreach (var family in FallbackFamilies(languageTag))
+            {
+                try
+                {
+                    if (!fallbackCache.TryGetValue(family, out var fallback))
+                    {
+                        fallback = FontAsset.CreateFontAsset(family, "Regular", 90);
+                        if (fallback != null) fallbackCache.Add(family, fallback);
+                    }
+                    if (fallback == null) { DwLog.I("Fonts", "system fallback unavailable: " + family); continue; }
+                    fallback.isMultiAtlasTexturesEnabled = true;
+                    primary.fallbackFontAssetTable.Add(fallback);
+                }
+                catch (Exception e) { DwLog.I("Fonts", "skip system fallback " + family + ": " + e.Message); }
+            }
+            root.style.unityFontDefinition = new StyleFontDefinition(FontDefinition.FromSDFFont(primary));
+        }
+        static string[] FallbackFamilies(string languageTag)
+        {
+            switch (languageTag)
+            {
+                case "bn": return new[] { "Noto Sans Bengali" };
+                case "hi": return new[] { "Noto Sans Devanagari", "Nirmala UI" };
+                case "ja": return new[] { "Noto Sans CJK JP", "Yu Gothic" };
+                case "ko": return new[] { "Malgun Gothic" };
+                case "ur": return new[] { "Noto Nastaliq Urdu", "Noto Naskh Arabic" };
+                case "zh-CN": return new[] { "Noto Sans CJK SC", "Microsoft YaHei" };
+                default: return Array.Empty<string>();
+            }
         }
     }
 }

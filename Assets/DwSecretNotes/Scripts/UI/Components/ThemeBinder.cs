@@ -10,6 +10,7 @@ namespace DwSecretNotes.UI
         sealed class Binding { public VisualElement El; public Action<ThemePalette> Apply; }
         static readonly List<Binding> bindings = new List<Binding>();
         public static ThemePalette Current { get; private set; } = ThemeCatalog.Get("classic");
+        public static bool ReducedMotion { get; private set; }
         public static event Action<ThemePalette> Changed;
         public static T On<T>(T el, Action<T, ThemePalette> apply) where T : VisualElement
         {
@@ -27,5 +28,10 @@ namespace DwSecretNotes.UI
         public static void Prune() => bindings.RemoveAll(b => b.El.panel == null);
         public static void Border(VisualElement e, Color c) { e.style.borderTopColor = c; e.style.borderBottomColor = c; e.style.borderLeftColor = c; e.style.borderRightColor = c; }
         public static Color A(Color c, float a) => ColorMath.WithAlpha(c, a);
+        public static void SetReducedMotion(bool value) { ReducedMotion = value; DwLog.Var("Theme", "reducedMotion", value); }
+        public static float GetSpacing(int token) => Current.SpacingTokens.TryGetValue("spacing-" + token, out var value)
+            ? value : throw new ArgumentOutOfRangeException(nameof(token), token, "Unknown spacing token");
+        public static float GetRadius(string token) => Current.RadiusTokens.TryGetValue("radius-" + token, out var value)
+            ? value : throw new ArgumentOutOfRangeException(nameof(token), token, "Unknown radius token");
     }
 }

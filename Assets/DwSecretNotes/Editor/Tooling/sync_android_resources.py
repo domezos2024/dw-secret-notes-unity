@@ -1,6 +1,6 @@
 import os, re, shutil, sys, json, xml.etree.ElementTree as ET
 here = os.path.dirname(os.path.abspath(__file__))
-unity = os.path.abspath(os.path.join(here, '..'))
+unity = os.path.abspath(os.path.join(here, '..', '..', '..', '..'))
 res = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else next((p for p in (os.path.join(unity, '..', 'app', 'src', 'main', 'res'), os.path.join(unity, '..', 'dw-secret-notes', 'app', 'src', 'main', 'res')) if os.path.isdir(p)), ''))
 i18n = os.path.join(unity, 'Assets', 'DwSecretNotes', 'Resources', 'i18n')
 lib = os.path.join(unity, 'Assets', 'Plugins', 'Android', 'DwNative.androidlib', 'res')

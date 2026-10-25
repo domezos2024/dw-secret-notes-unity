@@ -4,6 +4,22 @@ using DwSecretNotes.Core;
 using UnityEngine;
 namespace DwSecretNotes.Platform
 {
+    public static class EditorImagePickerHook
+    {
+        static Action<Action<byte[]>> picker;
+        public static void Register(Action<Action<byte[]>> editorPicker) => picker = editorPicker;
+        public static void Pick(Action<byte[]> onPicked)
+        {
+            if (picker == null)
+            {
+                DwLog.W("Native", "editor image picker is not registered");
+                onPicked?.Invoke(null);
+                return;
+            }
+            picker(onPicked);
+        }
+    }
+
     public enum Haptic { LongPress = 0, TextHandleMove = 9 }
     public sealed class LaunchRequest { public string Kind, Value; }
     public sealed class DonationOffer { public string Id, Price; }
@@ -124,8 +140,7 @@ namespace DwSecretNotes.Platform
         public void PickImage(Action<byte[]> onPicked)
         {
 #if UNITY_EDITOR
-            var path = UnityEditor.EditorUtility.OpenFilePanel("Image", "", "png,jpg,jpeg");
-            onPicked(string.IsNullOrEmpty(path) ? null : ImageCodec.PrepareForUpload(File.ReadAllBytes(path)));
+            EditorImagePickerHook.Pick(onPicked);
 #elif UNITY_STANDALONE_WIN
             try { var path = WinFileDialog.OpenImage(); onPicked(string.IsNullOrEmpty(path) ? null : ImageCodec.PrepareForUpload(File.ReadAllBytes(path))); }
             catch (Exception e) { DwLog.E("Native", "image dialog failed", e); onPicked(null); }

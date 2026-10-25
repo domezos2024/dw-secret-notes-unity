@@ -19,7 +19,7 @@ namespace DwSecretNotes.UI
             Row(card, "info_website_label", AppInfo.Host, true); Row(card, "info_license_label", AppInfo.License, false);
             c.Add(card); c.Add(Kit.Spacer(12));
             var crypto = Kit.Card(); var h = Kit.Row(); h.AddToClassList("dw-gap-row");
-            h.Add(Kit.Icon(IconKind.Shield, 22, p => p.Primary)); h.Add(Kit.Text("AES-256-GCM · PBKDF2-SHA256", "dw-title", p => p.Primary));
+            h.Add(Kit.Icon(IconKind.Shield, 22, p => p.Primary)); h.Add(Kit.Text(L10n.T("info_crypto_algo"), "dw-title", p => p.AccentText));
             crypto.Add(h); crypto.Add(Kit.Spacer(8)); crypto.Add(Kit.Text(L10n.T("info_crypto_note"), "dw-body", p => ThemeBinder.A(p.OnSurface, 0.85f)));
             c.Add(crypto); c.Add(Kit.Spacer(16)); c.Add(Footer.Build(Shell));
         }

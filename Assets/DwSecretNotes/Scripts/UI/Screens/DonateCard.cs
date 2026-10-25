@@ -20,12 +20,15 @@ namespace DwSecretNotes.UI
                 return card;
             }
             var host = Kit.Col(); card.Add(host);
+            var skeleton = new VisualElement(); skeleton.AddToClassList("dw-skeleton"); host.Add(skeleton);
+            ThemeBinder.On(skeleton, (e, p) => e.style.backgroundColor = p.SurfaceVariant);
             var note = Kit.Text(L10n.T("donate_choose"), "dw-small", p => p.OnSurfaceVariant); host.Add(note); host.Add(Kit.Spacer(8));
             var row = Kit.Row(); row.AddToClassList("dw-gap-row"); host.Add(row);
             host.style.display = DisplayStyle.None;
             Native.I.QueryDonations(offers =>
             {
                 DwLog.Var(Module, "offers", offers.Length);
+                skeleton.RemoveFromHierarchy();
                 host.style.display = DisplayStyle.Flex;
                 if (offers.Length == 0) { note.text = L10n.T("donate_unavailable"); return; }
                 foreach (var o in offers)

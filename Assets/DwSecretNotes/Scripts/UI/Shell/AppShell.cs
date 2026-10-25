@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DwSecretNotes.Business;
 using DwSecretNotes.Core;
 using DwSecretNotes.Platform;
 using UnityEngine;
@@ -11,23 +12,32 @@ namespace DwSecretNotes.UI
     {
         const string Module = "Shell";
         public readonly VisualElement Root;
+        public readonly SecretNotesService Notes;
+        public readonly IAppPreferences Preferences;
         readonly VisualElement safe, pageHost, overlay, toastHost;
+        readonly List<VisualElement> toastQueue = new List<VisualElement>();
+        const int MaxToasts = 3;
         TopBar topBar;
         readonly Dictionary<string, Page> alive = new Dictionary<string, Page>();
         Page current; MainPage main;
         readonly Stack<Action> overlayClosers = new Stack<Action>();
+        readonly Action<string> applyTheme, applyLanguage;
+        readonly ScreenReaderBridge screenReader;
         public bool StartWithLanguage { get; private set; }
         public bool ShowRatePrompt;
-        public AppShell(VisualElement root, bool firstRun)
+        public AppShell(VisualElement root, bool firstRun, SecretNotesService notes, IAppPreferences preferences, Action<string> applyTheme, Action<string> applyLanguage)
         {
-            Root = root; StartWithLanguage = firstRun;
+            Root = root; Notes = notes; Preferences = preferences; this.applyTheme = applyTheme; this.applyLanguage = applyLanguage; StartWithLanguage = firstRun;
+            screenReader = new ScreenReaderBridge(root);
             root.AddToClassList("dw-root");
-            root.Add(new Aurora());
             safe = new VisualElement(); safe.AddToClassList("dw-safe"); root.Add(safe);
             pageHost = new VisualElement(); pageHost.AddToClassList("dw-pagehost");
             overlay = new VisualElement { pickingMode = PickingMode.Ignore }; overlay.AddToClassList("dw-overlay"); root.Add(overlay);
             toastHost = new VisualElement { pickingMode = PickingMode.Ignore }; toastHost.AddToClassList("dw-toasthost"); root.Add(toastHost);
             root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea());
+            root.RegisterCallback<NavigationMoveEvent>(OnNavigationMove);
+            root.RegisterCallback<NavigationSubmitEvent>(OnNavigationSubmit);
+            root.RegisterCallback<NavigationCancelEvent>(OnNavigationCancel);
             BuildChrome();
             Navigate(firstRun ? Routes.Language : Routes.Main, false);
         }
@@ -57,9 +67,9 @@ namespace DwSecretNotes.UI
         {
             Page p = route switch
             {
-                Routes.Language => new LanguagePage(StartWithLanguage && current == null),
+                Routes.Language => new LanguagePage(StartWithLanguage && current == null, Preferences, applyLanguage),
                 Routes.Help => new HelpPage(), Routes.Info => new InfoPage(), Routes.TinyUrl => new TinyUrlPage(),
-                _ => main ??= new MainPage()
+                _ => main ??= new MainPage(Notes)
             };
             if (p.Root == null) p.Init(this);
             return p;
@@ -68,6 +78,7 @@ namespace DwSecretNotes.UI
         {
             DwLog.Var(Module, "route", route);
             if (current != null && current.Route == route) return;
+            var focusedPage = current?.Root != null && Root.panel?.focusController.focusedElement is VisualElement focused && current.Root.Contains(focused);
             var prev = current;
             var next = Create(route);
             if (prev != null)
@@ -82,7 +93,43 @@ namespace DwSecretNotes.UI
             topBar.Configure(next);
             if (animate) Kit.Enter(next.Root);
             next.OnShow();
+            if (focusedPage) next.Root.schedule.Execute(() => FocusFirst(next.Root)).StartingIn(20);
+            RefreshAccessibility();
         }
+        internal static bool CanFocus(VisualElement element)
+        {
+            if (!element.focusable || !element.enabledInHierarchy || element.panel == null) return false;
+            for (var node = element; node != null; node = node.parent)
+                if (node.resolvedStyle.display == DisplayStyle.None || node.resolvedStyle.visibility == Visibility.Hidden) return false;
+            return element.ClassListContains("dw-action") || element is TextField || element is Button;
+        }
+        void FocusFirst(VisualElement scope)
+        {
+            foreach (var element in scope.Query<VisualElement>().ToList())
+                if (CanFocus(element)) { element.Focus(); return; }
+        }
+        void OnNavigationMove(NavigationMoveEvent evt)
+        {
+            var focused = Root.panel?.focusController.focusedElement as VisualElement;
+            if (overlayClosers.Count == 0 && focused != null) return;
+            var scope = overlayClosers.Count > 0 ? overlay : current?.Root;
+            if (scope == null) return;
+            var candidates = scope.Query<VisualElement>().ToList().FindAll(CanFocus);
+            if (candidates.Count == 0) return;
+            var index = candidates.IndexOf(focused);
+            var backwards = evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Left;
+            var next = index < 0 ? 0 : (index + (backwards ? -1 : 1) + candidates.Count) % candidates.Count;
+            Root.panel.focusController.IgnoreEvent(evt);
+            candidates[next].Focus(); evt.StopPropagation();
+        }
+        void OnNavigationSubmit(NavigationSubmitEvent evt)
+        {
+            if (Root.panel?.focusController.focusedElement != null) return;
+            FocusFirst(overlayClosers.Count > 0 ? overlay : current?.Root);
+            Root.panel?.focusController.IgnoreEvent(evt);
+        }
+        void OnNavigationCancel(NavigationCancelEvent evt) { Back(); evt.StopPropagation(); }
+        public void RefreshAccessibility() => Root.schedule.Execute(() => screenReader.Refresh(overlayClosers.Count > 0 ? overlay : safe)).StartingIn(80);
         public void OnLanguageConfirmed() { StartWithLanguage = false; Rebuild(); Navigate(Routes.Main); }
         public MainPage Main => main ??= (MainPage)Create(Routes.Main);
         public void Back()
@@ -93,8 +140,10 @@ namespace DwSecretNotes.UI
             Native.I.MoveTaskToBack();
         }
         public void Update() { current?.OnUpdate(); }
+        public void OnAppBackground() => main?.CancelPendingRequests();
         public void OpenOverlay(VisualElement panel, Action onClosed, bool sheet)
         {
+            var previousFocus = Root.panel?.focusController.focusedElement as VisualElement;
             var scrim = new VisualElement(); scrim.AddToClassList("dw-scrim"); scrim.AddToClassList("dw-scrim--hidden");
             ThemeBinder.On(scrim, (e, p) => e.style.backgroundColor = new Color(0, 0, 0, p.IsLight ? 0.35f : 0.55f));
             var host = new VisualElement(); host.AddToClassList(sheet ? "dw-sheethost" : "dw-dialoghost"); host.pickingMode = PickingMode.Ignore;
@@ -106,13 +155,13 @@ namespace DwSecretNotes.UI
             {
                 if (closed) return; closed = true;
                 scrim.AddToClassList("dw-scrim--hidden"); panel.AddToClassList("dw-panel--hidden");
-                overlay.schedule.Execute(() => { scrim.RemoveFromHierarchy(); host.RemoveFromHierarchy(); ThemeBinder.Prune(); }).StartingIn(260);
+                overlay.schedule.Execute(() => { scrim.RemoveFromHierarchy(); host.RemoveFromHierarchy(); ThemeBinder.Prune(); if (previousFocus?.panel != null) previousFocus.Focus(); RefreshAccessibility(); }).StartingIn(260);
                 onClosed?.Invoke();
             };
             panel.userData = close;
-            scrim.AddManipulator(new Clickable(() => CloseTop()));
+            scrim.AddManipulator(new Clickable(() => { Native.I.Haptic(Haptic.LongPress); CloseTop(); }));
             overlayClosers.Push(close);
-            overlay.schedule.Execute(() => { scrim.RemoveFromClassList("dw-scrim--hidden"); panel.RemoveFromClassList("dw-panel--hidden"); }).StartingIn(20);
+            overlay.schedule.Execute(() => { scrim.RemoveFromClassList("dw-scrim--hidden"); panel.RemoveFromClassList("dw-panel--hidden"); FocusFirst(panel); RefreshAccessibility(); }).StartingIn(20);
         }
         public void CloseTop() { if (overlayClosers.Count > 0) overlayClosers.Pop()?.Invoke(); }
         public void Close(VisualElement panel)
@@ -125,13 +174,26 @@ namespace DwSecretNotes.UI
         public void Toast(string msg)
         {
             DwLog.Var(Module, "toast", msg);
+            if (toastQueue.Count == MaxToasts) RemoveToast(toastQueue[0]);
             var t = Kit.Row(); t.AddToClassList("dw-toast"); t.AddToClassList("dw-toast--hidden");
             var l = new Label(msg); l.AddToClassList("dw-toast__text"); t.Add(l);
             ThemeBinder.On(t, (e, p) => { e.style.backgroundColor = p.IsLight ? ColorMath.Hex(0xFF1F2430) : ColorMath.Lerp(p.SurfaceVariant, Color.white, 0.08f); l.style.color = p.IsLight ? Color.white : p.OnSurface; ThemeBinder.Border(e, ThemeBinder.A(p.Primary, 0.3f)); });
-            toastHost.Clear(); toastHost.Add(t);
+            toastQueue.Add(t); toastHost.Add(t);
+            DwLog.Var(Module, "toastQueueCount", toastQueue.Count);
             t.schedule.Execute(() => t.RemoveFromClassList("dw-toast--hidden")).StartingIn(20);
             t.schedule.Execute(() => t.AddToClassList("dw-toast--hidden")).StartingIn(2600);
-            t.schedule.Execute(() => t.RemoveFromHierarchy()).StartingIn(3000);
+            t.schedule.Execute(() => RemoveToast(t)).StartingIn(3000);
+        }
+        void RemoveToast(VisualElement toast)
+        {
+            if (!toastQueue.Remove(toast)) return;
+            toast.RemoveFromHierarchy();
+            DwLog.Var(Module, "toastQueueCount", toastQueue.Count);
+            foreach (var remaining in toastQueue)
+            {
+                remaining.AddToClassList("dw-toast--shift");
+                remaining.schedule.Execute(() => remaining.RemoveFromClassList("dw-toast--shift")).StartingIn(20);
+            }
         }
         public void ShowDialog(string title, string message, string confirm, string dismiss, Action onConfirm, Action onDismiss)
         {
@@ -148,9 +210,34 @@ namespace DwSecretNotes.UI
         public void ShowImage(Texture2D tex)
         {
             var v = new VisualElement(); v.AddToClassList("dw-viewer");
-            var img = new VisualElement { pickingMode = PickingMode.Ignore }; img.AddToClassList("dw-viewer__img"); img.style.backgroundImage = new StyleBackground(tex); v.Add(img);
-            var close = Kit.IconButton(IconKind.Close, () => Close(v), 26); close.AddToClassList("dw-viewer__close"); v.Add(close);
-            v.AddManipulator(new Clickable(() => { Native.I.Haptic(Haptic.LongPress); Close(v); }));
+            var img = new VisualElement(); img.AddToClassList("dw-viewer__img"); img.style.backgroundImage = new StyleBackground(tex); v.Add(img);
+            float zoom = 1f; Vector2 offset = Vector2.zero; Vector2 dragStart = Vector2.zero; Vector2 offsetStart = Vector2.zero; int pointerId = -1;
+            void ApplyTransform() { img.style.scale = new Scale(Vector3.one * zoom); img.style.translate = new Translate(offset.x, offset.y); }
+            void ResetTransform() { zoom = 1f; offset = Vector2.zero; ApplyTransform(); }
+            img.RegisterCallback<PointerDownEvent>(evt =>
+            {
+                if (evt.button != 0) return;
+                if (evt.clickCount >= 2) { ResetTransform(); evt.StopPropagation(); return; }
+                pointerId = evt.pointerId; dragStart = evt.position; offsetStart = offset; img.CapturePointer(pointerId); evt.StopPropagation();
+            });
+            img.RegisterCallback<PointerMoveEvent>(evt =>
+            {
+                if (pointerId != evt.pointerId || zoom <= 1f) return;
+                offset = offsetStart + (Vector2)evt.position - dragStart; img.style.translate = new Translate(offset.x, offset.y); evt.StopPropagation();
+            });
+            img.RegisterCallback<PointerUpEvent>(evt =>
+            {
+                if (pointerId != evt.pointerId) return;
+                if (img.HasPointerCapture(pointerId)) img.ReleasePointer(pointerId); pointerId = -1; evt.StopPropagation();
+            });
+            img.RegisterCallback<WheelEvent>(evt =>
+            {
+                zoom = Mathf.Clamp(zoom + (evt.delta.y < 0 ? 0.25f : -0.25f), 1f, 5f);
+                if (zoom <= 1f) offset = Vector2.zero; ApplyTransform(); evt.StopPropagation();
+            });
+            v.RegisterCallback<PointerDownEvent>(evt => { if (evt.target == v) Close(v); });
+            var close = Kit.IconButton(IconKind.Close, () => Close(v), 26, L10n.T("btn_close")); close.AddToClassList("dw-viewer__close"); v.Add(close);
+            Kit.Action(v, () => { Native.I.Haptic(Haptic.LongPress); Close(v); });
             ThemeBinder.On(v, (e, p) => e.style.backgroundColor = ThemeBinder.A(p.Background, 0.97f));
             OpenOverlay(v, null, false);
         }
@@ -172,7 +259,8 @@ namespace DwSecretNotes.UI
                 var name = Kit.Text(L10n.T(t.NameKey), "dw-label", p => p.OnSurface); name.style.flexGrow = 1; name.style.flexShrink = 1; lbl.Add(name);
                 var chk = new Icon(IconKind.Check, 16); lbl.Add(chk); card.Add(lbl);
                 ThemeBinder.On(card, (e, p) => { bool sel = p.Id == t.Id; e.style.backgroundColor = p.SurfaceVariant; ThemeBinder.Border(e, sel ? p.Primary : ThemeBinder.A(p.Outline, 0.3f)); e.EnableInClassList("dw-swatch--selected", sel); chk.Tint = p.Primary; chk.style.display = sel ? DisplayStyle.Flex : DisplayStyle.None; });
-                card.AddManipulator(new Clickable(() => { Native.I.Haptic(Haptic.LongPress); Close(s); App.SetTheme(t.Id); }));
+                card.tooltip = L10n.T(t.NameKey);
+                Kit.Action(card, () => { Native.I.Haptic(Haptic.LongPress); Close(s); applyTheme(t.Id); });
                 grid.Add(card);
             }
             ThemeBinder.On(s, (e, p) => e.style.backgroundColor = p.Surface);
@@ -183,10 +271,10 @@ namespace DwSecretNotes.UI
             var s = Kit.Col(); s.Add(SheetHandle());
             void Item(IconKind ic, string label, Action a, bool accent = false)
             {
-                var r = Kit.Row(); r.AddToClassList("dw-menuitem");
+                var r = Kit.Row(); r.AddToClassList("dw-menuitem"); r.tooltip = label;
                 r.Add(Kit.Icon(ic, 22, p => accent ? p.Secondary : p.Primary));
                 var l = Kit.Text(label, "dw-menuitem__text", p => p.OnSurface); l.style.flexGrow = 1; r.Add(l);
-                r.AddManipulator(new Clickable(() => { Native.I.Haptic(Haptic.LongPress); Close(s); a(); }));
+                Kit.Action(r, () => { Native.I.Haptic(Haptic.LongPress); Close(s); a(); });
                 s.Add(r);
             }
             Item(IconKind.Palette, L10n.T("theme_selection_title"), () => s.schedule.Execute(ShowThemeSheet).StartingIn(180), true);
@@ -211,10 +299,10 @@ namespace DwSecretNotes.UI
         public TopBar(AppShell shell)
         {
             this.shell = shell; AddToClassList("dw-topbar"); AddToClassList("dw-row");
-            back = Kit.IconButton(IconKind.Back, shell.Back); Add(back);
+            back = Kit.IconButton(IconKind.Back, shell.Back, 22, L10n.T("cd_back")); Add(back);
             var logo = new VisualElement(); logo.AddToClassList("dw-topbar__logo"); logo.style.backgroundImage = new StyleBackground(Resources.Load<Texture2D>("UI/app_icon")); Add(logo);
             var title = Kit.Text(L10n.T("app_name"), "dw-topbar__title", p => p.OnSurface); title.style.flexGrow = 1; title.style.flexShrink = 1; Add(title);
-            var menu = Kit.IconButton(IconKind.Menu, shell.ShowMenu); Add(menu);
+            var menu = Kit.IconButton(IconKind.Menu, shell.ShowMenu, 22, L10n.T("menu_more")); Add(menu);
             ThemeBinder.On(this, (e, p) => { e.style.backgroundColor = ThemeBinder.A(p.Surface, p.IsLight ? 0.85f : 0.55f); e.style.borderBottomColor = ThemeBinder.A(p.Primary, 0.12f); });
         }
         public void Configure(Page p)

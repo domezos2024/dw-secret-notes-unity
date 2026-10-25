@@ -20,12 +20,13 @@ namespace DwSecretNotes.UI
         {
             var card = Kit.Card(); card.AddToClassList("dw-accordion"); card.EnableInClassList("dw-accordion--open", open);
             var head = Kit.Row(); head.AddToClassList("dw-gap-row");
+            head.tooltip = L10n.T(open ? "accordion_collapse" : "accordion_expand") + ": " + L10n.T(titleKey);
             head.Add(Kit.Icon(icon, 22, p => p.Primary));
-            var t = Kit.Text(L10n.T(titleKey), "dw-title", p => p.Primary); t.style.flexGrow = 1; t.style.flexShrink = 1; head.Add(t);
+            var t = Kit.Text(L10n.T(titleKey), "dw-title", p => p.AccentText); t.style.flexGrow = 1; t.style.flexShrink = 1; head.Add(t);
             var chev = Kit.Icon(IconKind.Plus, 18, p => p.OnSurfaceVariant); chev.AddToClassList("dw-accordion__chev"); head.Add(chev);
             var body = Kit.Text(L10n.T(bodyKey), "dw-body dw-accordion__body", p => p.OnSurface);
             card.Add(head); card.Add(body);
-            head.AddManipulator(new Clickable(() => { Native.I.Haptic(Haptic.LongPress); card.ToggleInClassList("dw-accordion--open"); }));
+            Kit.Action(head, () => { Native.I.Haptic(Haptic.LongPress); card.ToggleInClassList("dw-accordion--open"); head.tooltip = L10n.T(card.ClassListContains("dw-accordion--open") ? "accordion_collapse" : "accordion_expand") + ": " + L10n.T(titleKey); });
             c.Add(card); c.Add(Kit.Spacer(12));
         }
     }

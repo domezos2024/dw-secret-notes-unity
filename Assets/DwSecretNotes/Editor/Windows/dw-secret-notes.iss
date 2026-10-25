@@ -1,4 +1,4 @@
-#define AppVersion "6.1.1"
+#define AppVersion "6.1.2"
 #define AppBaseName "dw-secret-notes-6.1.1-windows-setup"
 [Setup]
 AppId=DoMeZos-Ware.dwSecretNotes
@@ -11,7 +11,7 @@ AppSupportURL=https://domezos-ware.com/help.php
 AppUpdatesURL=https://domezos-ware.com/install.php
 DefaultDirName={localappdata}\Programs\DoMeZos-Ware\dw Secret Notes
 DefaultGroupName=DoMeZos-Ware
-OutputDir=..\..\Builds\Installer
+OutputDir=..\..\..\..\Builds\Installer
 OutputBaseFilename={#AppBaseName}
 UninstallDisplayIcon={app}\dw-secret-notes.exe
 Compression=lzma2
@@ -30,7 +30,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "Desktop-Verknüpfung erstellen"; GroupDescription: "Weitere Optionen:"
 [Files]
-Source: "..\..\Builds\Windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\..\..\Builds\Windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 [Icons]
 Name: "{autoprograms}\dw Secret Notes"; Filename: "{app}\dw-secret-notes.exe"
 Name: "{autodesktop}\dw Secret Notes"; Filename: "{app}\dw-secret-notes.exe"; Tasks: desktopicon

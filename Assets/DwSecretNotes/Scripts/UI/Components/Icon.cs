@@ -83,7 +83,7 @@ namespace DwSecretNotes.UI
             Value = new Label { pickingMode = PickingMode.Ignore }; Value.AddToClassList("dw-ring__value"); Add(Value);
             generateVisualContent += Draw;
         }
-        public void Set(float p, Color trackColor, Color barColor) { progress = Mathf.Clamp01(p); track = trackColor; bar = barColor; MarkDirtyRepaint(); }
+        public void Set(float p, Color trackColor, Color barColor) { progress = ThemeBinder.ReducedMotion ? 0 : Mathf.Clamp01(p); track = trackColor; bar = barColor; MarkDirtyRepaint(); }
         void Draw(MeshGenerationContext mgc)
         {
             var r = contentRect; float w = Mathf.Max(3, r.width * 0.08f), rad = Mathf.Min(r.width, r.height) / 2 - w; var c = r.center; var p = mgc.painter2D;
@@ -104,7 +104,7 @@ namespace DwSecretNotes.UI
                 var r = contentRect; var p = mgc.painter2D; p.lineWidth = Mathf.Max(2, r.width * 0.12f); p.lineCap = LineCap.Round; p.strokeColor = tint;
                 p.BeginPath(); p.Arc(r.center, r.width / 2 - p.lineWidth, Angle.Degrees(angle), Angle.Degrees(angle + 270)); p.Stroke();
             };
-            tick = schedule.Execute(() => { angle = (angle + 12) % 360; MarkDirtyRepaint(); }).Every(16);
+            tick = schedule.Execute(() => { if (ThemeBinder.ReducedMotion) return; angle = (angle + 12) % 360; MarkDirtyRepaint(); }).Every(16);
         }
         public Color Tint { get => tint; set { tint = value; MarkDirtyRepaint(); } }
     }

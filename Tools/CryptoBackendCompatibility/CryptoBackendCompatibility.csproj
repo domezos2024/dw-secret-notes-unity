@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Assets/DwSecretNotes/Scripts/Crypto/AesGcm256.cs" Link="Legacy/AesGcm256.cs" />
+    <Compile Include="../../Assets/DwSecretNotes/Scripts/Crypto/Pbkdf2Sha256.cs" Link="Legacy/Pbkdf2Sha256.cs" />
+  </ItemGroup>
+</Project>

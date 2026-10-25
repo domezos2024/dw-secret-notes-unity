@@ -5,8 +5,20 @@ namespace DwSecretNotes.Core
 {
     public sealed class ThemePalette
     {
+        public static readonly IReadOnlyDictionary<string, float> DefaultSpacing = new Dictionary<string, float>
+        {
+            ["spacing-1"] = 4, ["spacing-2"] = 8, ["spacing-3"] = 12,
+            ["spacing-4"] = 16, ["spacing-5"] = 24, ["spacing-6"] = 32, ["spacing-7"] = 48
+        };
+        public static readonly IReadOnlyDictionary<string, float> DefaultRadii = new Dictionary<string, float>
+        {
+            ["radius-xs"] = 4, ["radius-sm"] = 8, ["radius-md"] = 12,
+            ["radius-lg"] = 16, ["radius-xl"] = 24, ["radius-full"] = 9999
+        };
+        public IReadOnlyDictionary<string, float> SpacingTokens { get; } = DefaultSpacing;
+        public IReadOnlyDictionary<string, float> RadiusTokens { get; } = DefaultRadii;
         public string Id, NameKey; public bool IsLight;
-        public Color Background, Surface, SurfaceVariant, Primary, OnPrimary, PrimaryContainer, OnPrimaryContainer, Secondary, OnSecondary, OnSurface, OnSurfaceVariant, Outline, Tertiary, Error, ErrorContainer, Accent;
+        public Color Background, Surface, SurfaceVariant, Primary, AccentText, OnPrimary, PrimaryContainer, OnPrimaryContainer, Secondary, OnSecondary, OnSurface, OnSurfaceVariant, Outline, Tertiary, Error, ErrorContainer, Accent;
     }
     public static class ColorMath
     {
@@ -72,9 +84,9 @@ namespace DwSecretNotes.Core
         public static ThemePalette Get(string id) { foreach (var t in All) if (t.Id == id) return t; return All[0]; }
         static ThemePalette Classic() => new ThemePalette
         {
-            Id = "classic", NameKey = "theme_classic", Primary = Cyan, OnPrimary = ColorMath.Hex(0xFF001F2B), PrimaryContainer = ColorMath.Hex(0xFF004D66), OnPrimaryContainer = ColorMath.Hex(0xFFB3EFFF),
+            Id = "classic", NameKey = "theme_classic", Primary = Cyan, AccentText = ColorMath.EnsureReadable(ColorMath.Lerp(Cyan, NearWhite, 0.24f), ColorMath.Hex(0xFF091428), 4.5, NearWhite), OnPrimary = ColorMath.Hex(0xFF001F2B), PrimaryContainer = ColorMath.Hex(0xFF004D66), OnPrimaryContainer = ColorMath.Hex(0xFFB3EFFF),
             Secondary = Gold, OnSecondary = ColorMath.Hex(0xFF3F2E00), Background = ColorMath.Hex(0xFF050D1F), Surface = ColorMath.Hex(0xFF091428), OnSurface = ColorMath.Hex(0xFFF0F4FF),
-            SurfaceVariant = ColorMath.Hex(0xFF0D1E3A), OnSurfaceVariant = ColorMath.Hex(0xFF8899BB), Outline = ColorMath.Hex(0xFF4A6080), Tertiary = ColorMath.Hex(0xFF91D8FF),
+            SurfaceVariant = ColorMath.Hex(0xFF0D1E3A), OnSurfaceVariant = ColorMath.EnsureReadable(ColorMath.Hex(0xFF8899BB), ColorMath.Hex(0xFF0D1E3A), 4.5, NearWhite), Outline = ColorMath.Hex(0xFF4A6080), Tertiary = ColorMath.Hex(0xFF91D8FF),
             Error = ColorMath.Hex(0xFFF2B8B5), ErrorContainer = ColorMath.Hex(0xFF8C1D18), Accent = Gold
         };
         static ThemePalette Dark(string id, uint bg, uint surf, uint pri, uint sec, uint accent = 0)
@@ -84,9 +96,9 @@ namespace DwSecretNotes.Core
             var pc = ColorMath.Lerp(p, b, 0.55f);
             return new ThemePalette
             {
-                Id = id, NameKey = "theme_" + id, Background = b, Surface = s, Primary = p, OnPrimary = ColorMath.BestOn(p), PrimaryContainer = pc, OnPrimaryContainer = ColorMath.BestOn(pc),
-                Secondary = se, OnSecondary = ColorMath.BestOn(se), OnSurface = on, SurfaceVariant = ColorMath.Lerp(s, on, 0.12f), OnSurfaceVariant = ColorMath.Lerp(on, b, 0.3f),
-                Outline = ColorMath.Lerp(on, b, 0.45f), Tertiary = ColorMath.EnsureReadable(se, s, 4.5, Color.white), Error = ColorMath.Hex(0xFFF2B8B5), ErrorContainer = ColorMath.Hex(0xFF8C1D18),
+                Id = id, NameKey = "theme_" + id, Background = b, Surface = s, Primary = p, AccentText = ColorMath.EnsureReadable(ColorMath.Lerp(p, on, 0.24f), s, 4.5, on), OnPrimary = ColorMath.BestOn(p), PrimaryContainer = pc, OnPrimaryContainer = ColorMath.EnsureReadable(ColorMath.BestOn(pc), pc, 4.5, on),
+                Secondary = se, OnSecondary = ColorMath.BestOn(se), OnSurface = on, SurfaceVariant = ColorMath.Lerp(s, on, 0.12f), OnSurfaceVariant = ColorMath.EnsureReadable(ColorMath.Lerp(on, b, 0.3f), ColorMath.Lerp(s, on, 0.12f), 4.5, on),
+                Outline = ColorMath.Lerp(on, b, 0.45f), Tertiary = ColorMath.EnsureReadable(ColorMath.Lerp(se, on, 0.22f), s, 4.5, on), Error = ColorMath.Hex(0xFFF2B8B5), ErrorContainer = ColorMath.Hex(0xFF8C1D18),
                 Accent = accent == 0 ? p : ColorMath.Hex(accent)
             };
         }
@@ -97,9 +109,9 @@ namespace DwSecretNotes.Core
             var pc = ColorMath.Lerp(p, b, 0.75f);
             return new ThemePalette
             {
-                Id = id, NameKey = "theme_" + id, IsLight = true, Background = b, Surface = s, Primary = p, OnPrimary = ColorMath.BestOn(p), PrimaryContainer = pc, OnPrimaryContainer = ColorMath.BestOn(pc),
-                Secondary = se, OnSecondary = ColorMath.BestOn(se), OnSurface = on, SurfaceVariant = ColorMath.Lerp(s, on, 0.08f), OnSurfaceVariant = ColorMath.Lerp(on, b, 0.35f),
-                Outline = ColorMath.Lerp(on, b, 0.5f), Tertiary = ColorMath.EnsureReadable(se, s, 4.5, Color.black), Error = ColorMath.Hex(0xFFB3261E), ErrorContainer = ColorMath.Hex(0xFFF9DEDC), Accent = p
+                Id = id, NameKey = "theme_" + id, IsLight = true, Background = b, Surface = s, Primary = p, AccentText = ColorMath.EnsureReadable(ColorMath.Lerp(p, on, 0.24f), s, 4.5, on), OnPrimary = ColorMath.BestOn(p), PrimaryContainer = pc, OnPrimaryContainer = ColorMath.EnsureReadable(ColorMath.BestOn(pc), pc, 4.5, on),
+                Secondary = se, OnSecondary = ColorMath.BestOn(se), OnSurface = on, SurfaceVariant = ColorMath.Lerp(s, on, 0.08f), OnSurfaceVariant = ColorMath.EnsureReadable(ColorMath.Lerp(on, b, 0.35f), ColorMath.Lerp(s, on, 0.08f), 4.5, on),
+                Outline = ColorMath.Lerp(on, b, 0.5f), Tertiary = ColorMath.EnsureReadable(ColorMath.Lerp(se, on, 0.22f), s, 4.5, on), Error = ColorMath.Hex(0xFFB3261E), ErrorContainer = ColorMath.Hex(0xFFF9DEDC), Accent = p
             };
         }
     }

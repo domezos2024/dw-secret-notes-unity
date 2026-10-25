@@ -21,6 +21,7 @@ namespace DwSecretNotes.UI
         }
         void Tick()
         {
+            if (ThemeBinder.ReducedMotion) return;
             t += 0.033f; var r = contentRect; if (r.width < 1) return;
             float w = r.width, h = r.height, s = Mathf.Max(w, h);
             Place(blobs[0], s * 1.0f, w * (-0.25f + 0.08f * Mathf.Sin(t * 0.21f)), h * (-0.18f + 0.05f * Mathf.Cos(t * 0.17f)));
