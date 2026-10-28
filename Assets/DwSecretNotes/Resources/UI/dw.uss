@@ -67,6 +67,10 @@
 .dw-btn__text { font-size: 16px; -unity-font-style: bold; margin-left: var(--sp-2); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; flex-shrink: 1; }
 .dw-rtl .dw-btn__text { margin-left: 0; margin-right: var(--sp-2); }
 .dw-btn > Spinner, .dw-btn > .dw-icon { flex-shrink: 0; }
+.dw-btn--donate { padding: 0 var(--sp-2) 0 var(--sp-2); min-width: 0; }
+.dw-btn--donate .dw-btn__text { font-size: 14px; margin-left: var(--sp-1); }
+.dw-rtl .dw-btn--donate .dw-btn__text { margin-left: 0; margin-right: var(--sp-1); }
+
 
 .dw-field { flex-direction: column; border-radius: var(--rad-lg); border-width: 1px; min-height: 52px; padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-1); transition-property: border-color; transition-duration: 200ms; }
 .dw-field--focus { border-width: 2px; padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-1); }
@@ -128,7 +132,7 @@
 .dw-swatch--selected { border-width: 2px; }
 .dw-swatch:hover .dw-icon { display: flex; opacity: 0.5; }
 .dw-swatch--selected .dw-icon { opacity: 1; }
-.dw-swatch__bar { height: 38px; }
+.dw-swatch__bar { height: 46px; }
 .dw-swatch__label { padding: var(--sp-2); }
 
 .dw-toasthost { position: absolute; left: 16px; right: 16px; bottom: 24px; align-items: center; }

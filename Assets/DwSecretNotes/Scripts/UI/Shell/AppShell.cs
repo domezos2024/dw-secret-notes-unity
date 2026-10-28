@@ -250,11 +250,13 @@ namespace DwSecretNotes.UI
             foreach (var th in ThemeCatalog.All)
             {
                 var t = th; var card = Kit.Col("dw-swatch");
-                var bar = Kit.Row(); bar.AddToClassList("dw-swatch__bar");
+                var bar = Kit.Row(); bar.AddToClassList("dw-swatch__bar"); bar.style.alignItems = Align.Stretch;
                 var b1 = new VisualElement(); b1.style.flexGrow = 2; b1.style.backgroundColor = t.Background;
-                var b2 = new VisualElement(); b2.style.flexGrow = 1; b2.style.backgroundColor = t.Primary;
-                var b3 = new VisualElement(); b3.style.flexGrow = 1; b3.style.backgroundColor = t.Secondary;
-                bar.Add(b1); bar.Add(b2); bar.Add(b3); card.Add(bar);
+                var b2 = new VisualElement(); b2.style.flexGrow = 1; b2.style.backgroundColor = t.Surface;
+                var b3 = new VisualElement(); b3.style.flexGrow = 1; b3.style.backgroundColor = t.Primary;
+                var b4 = new VisualElement(); b4.style.flexGrow = 1; b4.style.backgroundColor = t.Secondary;
+                var b5 = new VisualElement(); b5.style.flexGrow = 1; b5.style.backgroundColor = t.Accent;
+                bar.Add(b1); bar.Add(b2); bar.Add(b3); bar.Add(b4); bar.Add(b5); card.Add(bar);
                 var lbl = Kit.Row(); lbl.AddToClassList("dw-swatch__label");
                 var name = Kit.Text(L10n.T(t.NameKey), "dw-label", p => p.OnSurface); name.style.flexGrow = 1; name.style.flexShrink = 1; lbl.Add(name);
                 var chk = new Icon(IconKind.Check, 16); lbl.Add(chk); card.Add(lbl);

@@ -34,7 +34,8 @@ namespace DwSecretNotes.UI
                 foreach (var o in offers)
                 {
                     var id = o.Id;
-                    var b = new DwButton(o.Price, IconKind.Heart, BtnKind.Primary, null); b.style.flexGrow = 1; b.style.flexBasis = 0;
+                    var b = new DwButton(o.Price, IconKind.Heart, BtnKind.Primary, null); b.AddToClassList("dw-btn--donate");
+                    b.style.flexGrow = 1; b.style.flexBasis = 0; b.style.flexShrink = 1; b.style.minWidth = 0;
                     b.SetAction(() => Native.I.Donate(id, r =>
                     {
                         DwLog.Var(Module, "result", r);

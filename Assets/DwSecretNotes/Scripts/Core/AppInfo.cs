@@ -5,8 +5,8 @@ namespace DwSecretNotes.Core
         public const string Host = "domezos-ware.com";
         public const string BaseUrl = "https://" + Host;
         public const string ApiKey = "53d1dc1f01dbe3dce66f53609ffa7f42ed572311414e87c0";
-        public const string Version = "6.1.2";
-        public const int VersionCode = 51;
+        public const string Version = "6.1.3";
+        public const int VersionCode = 53;
         public const string PackageId = "com.snote.domezos";
         public const string Developer = "Michael Bergfeld";
         public const string License = "MIT";

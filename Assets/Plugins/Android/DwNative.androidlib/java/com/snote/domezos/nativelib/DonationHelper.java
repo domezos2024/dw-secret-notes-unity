@@ -13,6 +13,7 @@ import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsResult;
 import com.android.billingclient.api.QueryPurchasesParams;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,8 +51,9 @@ public final class DonationHelper {
         connect(ctx, () -> {
             List<QueryProductDetailsParams.Product> ps = new ArrayList<>();
             for (String id : ids) ps.add(QueryProductDetailsParams.Product.newBuilder().setProductId(id).setProductType(BillingClient.ProductType.INAPP).build());
-            client.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder().setProductList(ps).build(), (r, list) -> {
+            client.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder().setProductList(ps).build(), (r, result) -> {
                 StringBuilder sb = new StringBuilder();
+                List<ProductDetails> list = result == null ? null : result.getProductDetailsList();
                 if (r.getResponseCode() == BillingClient.BillingResponseCode.OK && list != null) {
                     synchronized (details) { details.clear(); for (ProductDetails d : list) details.put(d.getProductId(), d); }
                     for (String id : ids) {
