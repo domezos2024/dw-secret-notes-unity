@@ -76,7 +76,7 @@ Signierung (Release): Umgebungsvariablen `DW_KEYSTORE`, `DW_KEYSTORE_PASS`, `DW_
 
 ## Release- und Kompatibilitätsprüfung
 
-Die folgenden Prüfnachweise stammen vom Entwicklungsstand 6.1.2 am 25.10.2026. Sie sind kein neuer Testbericht für den am 28.10.2026 in der Play Console aktiven Produktionsrelease 6.1.3 (53).
+Die folgenden Prüfnachweise stammen vom Entwicklungsstand 6.1.2 am 25.10.2026. Sie sind kein vollständiger neuer Testbericht für den am 28.10.2026 in der Play Console aktiven Produktionsrelease 6.1.3 (53). Nach der Aktualisierung der Hilfetexte wurde der Unity-SelfTest am 28.10.2026 lokal erneut ausgeführt (`RESULT fails=0`); sein Protokoll liegt unter `Logs/docs-audit-localization-2026-10-28.log` und ist nicht versioniert.
 
 - Backend-Kompatibilität: `Tools/CryptoBackendCompatibility` testet PBKDF2/AES-GCM-Vektoren sowie Text- und Bildnachrichten gegen das echte Backend. Der aktuelle Unity-Android-Laufzeitcheck bleibt bewusst auf der bestehenden Custom-Krypto, da `AesGcm` auf dem Zielgerät nicht verfügbar ist.
 - Accessibility: `ScreenReaderBridge` registriert fokussierbare UI-Elemente in Unitys Accessibility-Hierarchie; Android-TalkBack wurde auf dem Emulator mit protokollierten Hierarchieknoten geprüft.
