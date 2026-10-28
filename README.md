@@ -10,7 +10,7 @@ Aktuell gepflegte Unity-6-Version der Android-App `dw Secret Notes`. Die Oberfl�
 | Funktion | Umsetzung |
 |---|---|
 | Text + optionales Bild auf dem Gerät verschlüsseln, Link teilen/kopieren | `Scripts/Crypto/NoteCrypto.cs`, `Scripts/Business/SecretNotesService.cs`, `Scripts/UI/Screens/MainPage.cs` – AES-256-GCM, PBKDF2-SHA256 (100 000 Iterationen) |
-| Link/Alias entschlüsseln und entschlüsselte Ansicht nach 60 Sekunden leeren | `Scripts/Business/SecretNotesService.cs`, `Scripts/UI/Screens/MainPage.cs`; nach erfolgreicher Entschlüsselung wird das Entfernen der Serverkopie angefordert |
+| Link/Alias entschlüsseln und entschlüsselte Ansicht nach 60 Sekunden leeren | `Scripts/Business/SecretNotesService.cs`, `Scripts/UI/Screens/MainPage.cs`; nach erfolgreicher Entschlüsselung wird die Serverkopie per `unlink` entfernt und mit einem zweiten `get` im Hintergrund geprüft |
 | Kurzlinks/Redirects auflösen | `Scripts/Data/HttpNoteRepository.cs`, `Scripts/Core/LinkParser.cs` |
 | Deep Links `https://domezos-ware.com/msges/view.php?...`, Teilen-Intent (Text) | `Plugins/Android/DwActivity.java`, `DwBridge.java`, `Core/LinkParser.cs` |
 | 14 Sprachen inkl. Plural-Regeln, RTL (ur) | `Core/Localization.cs`, `Resources/i18n/*.json` |
@@ -29,7 +29,7 @@ Neu in der Oberfläche: animierter Aurora-Hintergrund, Glas-Karten, Tabs Verschl
 
 - Die App ist ohne Registrierung kostenlos nutzbar. Auf Android sind freiwillige Spenden über Google Play Billing möglich; sie sind für die Kernfunktionen nicht erforderlich.
 - Text und ein optionales Bild werden vor dem Hochladen auf dem Gerät mit AES-256-GCM verschlüsselt. Der erzeugte Link enthält Informationen, die zum Entschlüsseln benötigt werden; teile ihn nur mit der vorgesehenen Person.
-- Nach erfolgreicher Entschlüsselung fordert die App die Löschung der Serverkopie an. Der entschlüsselte Inhalt wird nach 60 Sekunden aus der App-Ansicht entfernt. Eine erfolgreiche Serverlöschung wird in der aktuellen Implementierung nicht bestätigt oder wiederholt.
+- Nach erfolgreicher Entschlüsselung sendet die App `unlink` an das PHP-Backend. Anschließend prüft ein zweiter, für Nutzer unsichtbarer `get`-Abruf, ob der Server `not_found` meldet. Das Ergebnis wird protokolliert; der Countdown und die Anzeige der entschlüsselten Nachricht laufen unabhängig davon 60 Sekunden weiter. Die zusätzliche Prüfung ist eine Quellcodeänderung und wird erst mit einem neuen App-Build ausgeliefert.
 - Die App-Oberfläche bietet 14 Sprachen. Bei anderen Gerätesprachen wird Englisch verwendet. Der Store-Eintrag kann zusätzlich in weiteren Sprachen lokalisiert sein.
 
 UI/Accessibility: UI Toolkit verwendet vorab erzeugte TextCore-SDF-FontAssets unter `Assets/DwSecretNotes/Fonts` (nicht `Resources`); die Schriftquellen bleiben dort für die Lizenz-/Asset-Reproduzierbarkeit. Fließtext nutzt kontrastgeprüfte, abgetönte Farben (mindestens WCAG AA 4,5:1), Neonfarben bleiben Akzenten vorbehalten. Notiz- und Linkfelder sind standardmäßig maskiert und bieten lokalisierte Ein-/Ausblenden- und Leeren-Schaltflächen. Klartext wird bewusst nicht automatisch gespeichert; geheime Entwürfe bleiben im Arbeitsspeicher, bis sie verschlüsselt oder gelöscht werden. Das UI-Toolkit-Panel skaliert mit Referenzauflösung 1080×1920 und Width/Height-Match 0,5.

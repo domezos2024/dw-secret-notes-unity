@@ -111,9 +111,27 @@ namespace DwSecretNotes.Business
                 return new DecryptResult { Status = DecryptStatus.NotFound };
             }
             cancellationToken.ThrowIfCancellationRequested();
-            // Once plaintext was produced, deletion must continue even if the screen is hidden.
-            _ = repository.Unlink(fetched.Alias, CancellationToken.None);
+            // Keep deletion verification independent of the 60-second local display.
+            _ = VerifyRemovalAsync(fetched.Alias);
             return new DecryptResult { Status = DecryptStatus.Ok, Note = new SecretNote { Text = note.Text, Image = note.Image } };
+        }
+
+        async Task VerifyRemovalAsync(string alias)
+        {
+            try
+            {
+                DwLog.I(Module, "unlink after successful decryption");
+                await repository.Unlink(alias, CancellationToken.None);
+                var verification = await repository.Fetch(alias, CancellationToken.None);
+                if (verification.Status == NoteFetchStatus.NotFound)
+                    DwLog.I(Module, "removal verified");
+                else
+                    DwLog.W(Module, "removal verification status: " + verification.Status);
+            }
+            catch (Exception e)
+            {
+                DwLog.E(Module, "removal verification failed", e);
+            }
         }
 
         public async Task<DecryptResult> DecryptLink(string input, string passOverride = null, CancellationToken cancellationToken = default)

@@ -78,7 +78,45 @@ namespace DwSecretNotes.EditorTools
             // The continuation only returns a value; Unity and Editor APIs stay on the main thread in Watch.
             var memoryRoundTrip = await BusinessMemoryRoundTrip().ConfigureAwait(false);
             var cancellation = await BusinessCancellation().ConfigureAwait(false);
-            return memoryRoundTrip && cancellation;
+            var removalVerification = await BusinessRemovalVerification().ConfigureAwait(false);
+            return memoryRoundTrip && cancellation && removalVerification;
+        }
+        static async Task<bool> BusinessRemovalVerification()
+        {
+            var repository = new VerificationNoteRepository();
+            var result = await new SecretNotesService(repository).FetchAndDecrypt("verify", "pass").ConfigureAwait(false);
+            bool displayReady = result.Status == DecryptStatus.Ok && result.Note.Text == "verification"
+                && repository.FetchCount == 1 && !repository.VerificationDone.Task.IsCompleted;
+            repository.AllowUnlink.TrySetResult(true);
+            var completed = await Task.WhenAny(repository.VerificationDone.Task, Task.Delay(10000)).ConfigureAwait(false);
+            bool verified = completed == repository.VerificationDone.Task
+                && repository.FetchCount == 2 && repository.VerificationDone.Task.Result;
+            Check("background-removal-verification", displayReady && verified);
+            return displayReady && verified;
+        }
+        sealed class VerificationNoteRepository : INoteRepository
+        {
+            public readonly TaskCompletionSource<bool> AllowUnlink = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            public readonly TaskCompletionSource<bool> VerificationDone = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            public int FetchCount;
+            bool removed;
+            readonly NotePayload payload = NoteCrypto.Encrypt("pass", "verification", null);
+            public Task<NoteSaveStatus> Save(string timestamp, string data, CancellationToken cancellationToken = default) => Task.FromResult(NoteSaveStatus.Failed);
+            public Task<NoteFetchResult> Fetch(string alias, CancellationToken cancellationToken = default)
+            {
+                FetchCount++;
+                var result = removed
+                    ? new NoteFetchResult { Status = NoteFetchStatus.NotFound }
+                    : new NoteFetchResult { Status = NoteFetchStatus.Found, Alias = alias, Payload = payload };
+                if (FetchCount == 2) VerificationDone.TrySetResult(result.Status == NoteFetchStatus.NotFound);
+                return Task.FromResult(result);
+            }
+            public async Task Unlink(string alias, CancellationToken cancellationToken = default)
+            {
+                await AllowUnlink.Task.ConfigureAwait(false);
+                removed = true;
+            }
+            public Task<ParsedLink?> ResolveLink(string input, CancellationToken cancellationToken = default) => Task.FromResult<ParsedLink?>(null);
         }
         static async Task<bool> BusinessCancellation()
         {
