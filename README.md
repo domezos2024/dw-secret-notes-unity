@@ -1,21 +1,20 @@
 # dw Secret Notes – Unity Edition
 
-Unity-6-Neuauflage der Android-App `dw-secret-notes` (gleiche Funktionen, gleiches Backend, neue UI-Toolkit-Oberfläche).
+Aktuell gepflegte Unity-6-Version der Android-App `dw Secret Notes`. Die Oberfläche basiert auf Unity UI Toolkit; das bisherige Kotlin-/Compose-Repository beschreibt die frühere App. Die Android-App ist unter derselben Paketkennung im [Google Play Store](https://play.google.com/store/apps/details?id=com.snote.domezos) erhältlich.
 
 - Unity: 6000.3.25f1, UI Toolkit (komplett aus C# aufgebaut), Built-in Render Pipeline
-- Paket: `com.snote.domezos`, Version 6.1.2 (versionCode 51) – Update-Pfad der bestehenden Play-Store-App, sofern mit demselben Schlüssel signiert
-- Android-Quellprojekt: `E:\AndroidStudioProjects\dw-secret-notes`
+- Paket: `com.snote.domezos`, Version 6.1.3 (versionCode 53); am 28.10.2026 in der Play Console als aktiver Produktionsrelease angezeigt
 
-## Funktionen (1:1 aus der Android-App)
+## Funktionen
 
 | Funktion | Umsetzung |
 |---|---|
-| Text + optionales Bild verschlüsseln, Link teilen/kopieren | `Net/NoteApi.cs`, `Crypto/*` – AES-256-GCM, PBKDF2-SHA256 (100 000 Iterationen), kompatibel zu WebApp/Android |
-| Link/Alias entschlüsseln, 60-s-Countdown, Einmal-Lesen (unlink) | `UI/Screens/MainPage.cs` |
-| Kurzlinks/Redirects auflösen | `NoteApi.ResolveLink` |
+| Text + optionales Bild auf dem Gerät verschlüsseln, Link teilen/kopieren | `Scripts/Crypto/NoteCrypto.cs`, `Scripts/Business/SecretNotesService.cs`, `Scripts/UI/Screens/MainPage.cs` – AES-256-GCM, PBKDF2-SHA256 (100 000 Iterationen) |
+| Link/Alias entschlüsseln und entschlüsselte Ansicht nach 60 Sekunden leeren | `Scripts/Business/SecretNotesService.cs`, `Scripts/UI/Screens/MainPage.cs`; nach erfolgreicher Entschlüsselung wird das Entfernen der Serverkopie angefordert |
+| Kurzlinks/Redirects auflösen | `Scripts/Data/HttpNoteRepository.cs`, `Scripts/Core/LinkParser.cs` |
 | Deep Links `https://domezos-ware.com/msges/view.php?...`, Teilen-Intent (Text) | `Plugins/Android/DwActivity.java`, `DwBridge.java`, `Core/LinkParser.cs` |
 | 14 Sprachen inkl. Plural-Regeln, RTL (ur) | `Core/Localization.cs`, `Resources/i18n/*.json` |
-| 17 Themes (gleiche Farbableitung wie Compose) | `Core/ThemeCatalog.cs` |
+| 17 Themes | `Core/ThemeCatalog.cs` |
 | Hilfe, Info, TinyURL, Sprache, Theme-Auswahl | `UI/Screens/*`, `UI/Shell/AppShell.cs` |
 | Homescreen-Widgets (Schnell-Verschlüsseln, Starter) | `Plugins/Android/DwNative.androidlib` |
 | Bewertungsdialog (3. Start), In-App-Review, Sterne im Footer | `MainPage.OnShow`, `ReviewHelper.java` |
@@ -25,6 +24,13 @@ Unity-6-Neuauflage der Android-App `dw-secret-notes` (gleiche Funktionen, gleich
 Debug-Argumente (Desktop, Debug-Builds auch Android): `--lang=xx`, `--theme=id`, `--route=main|help|info|tinyUrl|language`, `--menu`, `--shot=pfad`, `--e2e` (Verschlüsseln, Kopieren, Teilen, Entschlüsseln gegen das echte Backend, Ergebnis in `persistentDataPath/e2e.txt`).
 
 Neu in der Oberfläche: animierter Aurora-Hintergrund, Glas-Karten, Tabs Verschlüsseln/Entschlüsseln, Vektor-Icons, Countdown-Ring, Einfügen aus Zwischenablage, Bildvorschau mit Vollbild, Bottom-Sheets für Menü/Themes, Akkordeon-FAQ, Toasts.
+
+## Hinweise für Nutzer
+
+- Die App ist ohne Registrierung kostenlos nutzbar. Auf Android sind freiwillige Spenden über Google Play Billing möglich; sie sind für die Kernfunktionen nicht erforderlich.
+- Text und ein optionales Bild werden vor dem Hochladen auf dem Gerät mit AES-256-GCM verschlüsselt. Der erzeugte Link enthält Informationen, die zum Entschlüsseln benötigt werden; teile ihn nur mit der vorgesehenen Person.
+- Nach erfolgreicher Entschlüsselung fordert die App die Löschung der Serverkopie an. Der entschlüsselte Inhalt wird nach 60 Sekunden aus der App-Ansicht entfernt. Eine erfolgreiche Serverlöschung wird in der aktuellen Implementierung nicht bestätigt oder wiederholt.
+- Die App-Oberfläche bietet 14 Sprachen. Bei anderen Gerätesprachen wird Englisch verwendet. Der Store-Eintrag kann zusätzlich in weiteren Sprachen lokalisiert sein.
 
 UI/Accessibility: UI Toolkit verwendet vorab erzeugte TextCore-SDF-FontAssets unter `Assets/DwSecretNotes/Fonts` (nicht `Resources`); die Schriftquellen bleiben dort für die Lizenz-/Asset-Reproduzierbarkeit. Fließtext nutzt kontrastgeprüfte, abgetönte Farben (mindestens WCAG AA 4,5:1), Neonfarben bleiben Akzenten vorbehalten. Notiz- und Linkfelder sind standardmäßig maskiert und bieten lokalisierte Ein-/Ausblenden- und Leeren-Schaltflächen. Klartext wird bewusst nicht automatisch gespeichert; geheime Entwürfe bleiben im Arbeitsspeicher, bis sie verschlüsselt oder gelöscht werden. Das UI-Toolkit-Panel skaliert mit Referenzauflösung 1080×1920 und Width/Height-Match 0,5.
 
@@ -68,7 +74,9 @@ python "$p\Assets\DwSecretNotes\Editor\Tooling\sync_android_resources.py"
 
 Signierung (Release): Umgebungsvariablen `DW_KEYSTORE`, `DW_KEYSTORE_PASS`, `DW_KEY_ALIAS`, `DW_KEY_PASS`. Ohne diese wird mit dem Debug-Schlüssel signiert.
 
-## Release- und Kompatibilitätsprüfung 6.1.2
+## Release- und Kompatibilitätsprüfung
+
+Die folgenden Prüfnachweise stammen vom Entwicklungsstand 6.1.2 am 25.10.2026. Sie sind kein neuer Testbericht für den am 28.10.2026 in der Play Console aktiven Produktionsrelease 6.1.3 (53).
 
 - Backend-Kompatibilität: `Tools/CryptoBackendCompatibility` testet PBKDF2/AES-GCM-Vektoren sowie Text- und Bildnachrichten gegen das echte Backend. Der aktuelle Unity-Android-Laufzeitcheck bleibt bewusst auf der bestehenden Custom-Krypto, da `AesGcm` auf dem Zielgerät nicht verfügbar ist.
 - Accessibility: `ScreenReaderBridge` registriert fokussierbare UI-Elemente in Unitys Accessibility-Hierarchie; Android-TalkBack wurde auf dem Emulator mit protokollierten Hierarchieknoten geprüft.

@@ -1,5 +1,7 @@
 # Krypto- und Backend-Kompatibilität
 
+> Prüfprotokoll vom 25.10.2026. Es dokumentiert die damalige Kompatibilitätsprüfung und ist keine Aussage über einen erneuten Test des aktuellen Produktionsreleases 6.1.3 (53).
+
 Diese .NET-9-Testanwendung vergleicht die bestehenden Unity-Implementierungen von PBKDF2-SHA256 und AES-GCM mit den .NET-Standardbibliotheken. Sie speichert danach zwei eigene Text-/Bild-Testnachrichten über `https://domezos-ware.com/api/msg_store.php`, liest sie zurück, prüft beide Entschlüsselungsrichtungen und entfernt die Testnachrichten wieder. Sie gibt weder API-Schlüssel noch Passwörter oder Klartext aus. Die Ergebnisse stehen in `Logs/crypto-backend-dotnet.txt`.
 
 ```powershell
