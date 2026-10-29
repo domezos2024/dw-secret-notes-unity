@@ -48,12 +48,12 @@
 .dw-rtl .dw-hero__badge { margin-right: 0; margin-left: var(--sp-3); }
 .dw-hero__glow { position: absolute; left: -30px; top: -30px; width: 124px; height: 124px; }
 
-.dw-tabs { height: 52px; border-radius: var(--rad-full); border-width: 1px; padding: var(--sp-1); }
-.dw-tabs__indicator { position: absolute; top: 4px; bottom: 4px; left: 4px; width: 50%; border-radius: var(--rad-full); transition-property: translate; transition-duration: 280ms; transition-timing-function: ease-out-back; }
+.dw-tabs { height: 52px; border-radius: var(--rad-xl); border-width: 1px; padding: var(--sp-1); }
+.dw-tabs__indicator { position: absolute; top: 4px; bottom: 4px; left: 4px; width: 50%; border-radius: 20px; transition-property: translate; transition-duration: 280ms; transition-timing-function: ease-out-back; }
 .dw-tabs__indicator--right { translate: 96% 0; }
 .dw-rtl .dw-tabs__indicator { translate: 96% 0; }
 .dw-rtl .dw-tabs__indicator--right { translate: 0 0; }
-.dw-tab { flex-grow: 1; flex-basis: 0; height: 100%; justify-content: center; border-radius: var(--rad-full); }
+.dw-tab { flex-grow: 1; flex-basis: 0; height: 100%; justify-content: center; border-radius: 20px; }
 .dw-tab__text { font-size: 15px; -unity-font-style: bold; margin-left: var(--sp-2); }
 .dw-rtl .dw-tab__text { margin-left: 0; margin-right: var(--sp-2); }
 
