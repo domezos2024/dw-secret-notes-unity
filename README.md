@@ -47,7 +47,7 @@ Assets/DwSecretNotes/Scripts/Data      HTTP-Repository und lokale PlayerPrefs
 Assets/DwSecretNotes/Scripts/Platform  Native Bridge (Android / Desktop)
 Assets/DwSecretNotes/Scripts/UI        Shell, Komponenten, Seiten
 Assets/DwSecretNotes/Scripts/Bootstrap Composition Root und Runtime-Start
-Assets/DwSecretNotes/Editor            Editor-only Setup, Builds, Picker und Selbsttests
+Assets/DwSecretNotes/Editor            Editor-only Setup, Builds (inkl. BuildScript.cs für CI-AAB-Builds), Picker und Selbsttests
 Assets/DwSecretNotes/Editor/Tooling    Android-Resource-Sync
 Assets/DwSecretNotes/Editor/Windows    Windows-Installer-Skript
 Assets/Plugins/Android                 Activity, Bridge, Widgets, Bildauswahl
@@ -73,7 +73,13 @@ python "$p\Assets\DwSecretNotes\Editor\Tooling\sync_android_resources.py"
 & "$p\Builds\Windows\dw-secret-notes.exe" --shot=E:\shot.png --at=3 --route=main
 ```
 
-Signierung (Release): Umgebungsvariablen `DW_KEYSTORE`, `DW_KEYSTORE_PASS`, `DW_KEY_ALIAS`, `DW_KEY_PASS`. Ohne diese wird mit dem Debug-Schlüssel signiert.
+CI-AAB-Build (nur signiert):
+```powershell
+& $u -batchmode -nographics -quit -projectPath $p -executeMethod BuildScript.BuildAndroid -logFile "$p\Logs\build_aab.log"
+```
+`BuildScript.BuildAndroid` erzeugt ein signiertes AAB unter `Builds/Android/dw-secret-notes.aab`. Bricht ab, wenn `DW_KEYSTORE_PASS` nicht gesetzt ist.
+
+Signierung (Release): Umgebungsvariablen `DW_KEYSTORE_PATH` (Default `C:\Users\micha\OneDrive\Dokumente\AndroidSignKey`), `DW_KEYSTORE_PASS`, `DW_KEY_ALIAS` (Default `domezos`), `DW_KEY_PASS` (fällt auf `DW_KEYSTORE_PASS` zurück). Ohne `DW_KEYSTORE_PASS` wird der Build abgebrochen (kein Fallback auf Debug-Schlüssel bei `BuildScript`).
 
 ## Release- und Kompatibilitätsprüfung
 

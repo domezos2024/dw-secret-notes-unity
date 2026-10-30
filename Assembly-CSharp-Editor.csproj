@@ -53,6 +53,7 @@
     <Compile Include="Assets\DwSecretNotes\Editor\SelfTest.cs" />
     <Compile Include="Assets\DwSecretNotes\Editor\CryptoBackendCompatibility.cs" />
     <Compile Include="Assets\DwSecretNotes\Editor\ProjectBootstrap.cs" />
+    <Compile Include="Assets\DwSecretNotes\Editor\BuildScript.cs" />
     <Compile Include="Assets\DwSecretNotes\Editor\EditorImagePickerRegistration.cs" />
   </ItemGroup>
   <ItemGroup>
