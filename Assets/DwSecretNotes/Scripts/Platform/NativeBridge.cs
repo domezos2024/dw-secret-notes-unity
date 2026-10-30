@@ -202,16 +202,21 @@ namespace DwSecretNotes.Platform
         {
             var tex = new Texture2D(2, 2);
             if (!tex.LoadImage(src)) { UnityEngine.Object.Destroy(tex); return null; }
-            int w = tex.width, h = tex.height, max = Mathf.Max(w, h);
-            if (max > AppInfo.MaxImageEdge)
-            {
-                float s = (float)AppInfo.MaxImageEdge / max; int nw = Mathf.Max(1, (int)(w * s)), nh = Mathf.Max(1, (int)(h * s));
-                var rt = RenderTexture.GetTemporary(nw, nh, 0, RenderTextureFormat.ARGB32);
-                Graphics.Blit(tex, rt); var prev = RenderTexture.active; RenderTexture.active = rt;
-                var scaled = new Texture2D(nw, nh, TextureFormat.RGB24, false); scaled.ReadPixels(new Rect(0, 0, nw, nh), 0, 0); scaled.Apply();
-                RenderTexture.active = prev; RenderTexture.ReleaseTemporary(rt); UnityEngine.Object.Destroy(tex); tex = scaled;
-            }
+            tex = Downsample(tex, AppInfo.MaxImageEdge);
             var jpg = tex.EncodeToJPG(AppInfo.JpegQuality); UnityEngine.Object.Destroy(tex); return jpg;
+        }
+
+        /// <summary>Scales texture down if larger than maxEdge. Destroys the original if scaled. Caller owns the returned texture.</summary>
+        public static Texture2D Downsample(Texture2D tex, int maxEdge)
+        {
+            int w = tex.width, h = tex.height, max = Mathf.Max(w, h);
+            if (max <= maxEdge) return tex;
+            float s = (float)maxEdge / max; int nw = Mathf.Max(1, (int)(w * s)), nh = Mathf.Max(1, (int)(h * s));
+            var rt = RenderTexture.GetTemporary(nw, nh, 0, RenderTextureFormat.ARGB32);
+            Graphics.Blit(tex, rt); var prev = RenderTexture.active; RenderTexture.active = rt;
+            var scaled = new Texture2D(nw, nh, TextureFormat.RGB24, false); scaled.ReadPixels(new Rect(0, 0, nw, nh), 0, 0); scaled.Apply();
+            RenderTexture.active = prev; RenderTexture.ReleaseTemporary(rt); UnityEngine.Object.Destroy(tex);
+            return scaled;
         }
     }
 }
