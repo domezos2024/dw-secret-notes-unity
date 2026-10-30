@@ -267,7 +267,7 @@ namespace DwSecretNotes.UI
                 var text = result.Note.Text == " " ? "" : result.Note.Text;
                 decText.text = text; decText.style.display = text.Length > 0 ? DisplayStyle.Flex : DisplayStyle.None;
                 if (decTex != null) { UnityEngine.Object.Destroy(decTex); decTex = null; }
-                if (result.Note.Image != null) { var texture = new Texture2D(2, 2); if (texture.LoadImage(result.Note.Image)) decTex = texture; else UnityEngine.Object.Destroy(texture); }
+                if (result.Note.Image != null) { var texture = new Texture2D(2, 2); if (texture.LoadImage(result.Note.Image)) decTex = ImageCodec.Downsample(texture, AppInfo.MaxImageEdge); else UnityEngine.Object.Destroy(texture); }
                 decImage.style.display = decTex != null ? DisplayStyle.Flex : DisplayStyle.None;
                 decImage.style.backgroundImage = decTex != null ? new StyleBackground(decTex) : new StyleBackground(StyleKeyword.None);
                 decryptShown = true; decryptUntil = Time.realtimeSinceStartup + AppInfo.DecryptCountdownSeconds; lastSecond = -1;

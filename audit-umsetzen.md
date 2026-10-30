@@ -1,6 +1,6 @@
 # Audit-Umsetzung — dw-secret-notes-unity v6.1.1
 
-> Historisches Arbeitsprotokoll vom 25.10.2026. Versionsnummern, offene Aufgaben und Freigabevermerke unten beschreiben den damaligen Stand. Aktueller Quell- und Produktionsstand: 6.1.3 (versionCode 53), am 28.10.2026 in der Play Console geprüft. Für den aktuellen Funktionsumfang siehe [README.md](README.md).
+> Historisches Arbeitsprotokoll vom 25.10.2026. Versionsnummern, offene Aufgaben und Freigabevermerke unten beschreiben den damaligen Stand. Aktueller Quellstand: 6.1.4 (versionCode 54); Produktionsstand: 6.1.3 (versionCode 53), am 28.10.2026 in der Play Console geprüft. Für den aktuellen Funktionsumfang siehe [README.md](README.md).
 
 > **Quelle:** Code-Reviewer (Stages 5–8) + UX-UI Auditor (Phases 0–5)  
 > **Projekt:** Unity 6000.3.25f1, Package com.snote.domezos v6.1.1  

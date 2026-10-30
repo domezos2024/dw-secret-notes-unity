@@ -3,7 +3,8 @@
 Aktuell gepflegte Unity-6-Version der Android-App `dw Secret Notes`. Die Oberfläche basiert auf Unity UI Toolkit; das bisherige Kotlin-/Compose-Repository beschreibt die frühere App. Die Android-App ist unter derselben Paketkennung im [Google Play Store](https://play.google.com/store/apps/details?id=com.snote.domezos) erhältlich.
 
 - Unity: 6000.3.25f1, UI Toolkit (komplett aus C# aufgebaut), Built-in Render Pipeline
-- Paket: `com.snote.domezos`, Version 6.1.3 (versionCode 53); am 28.10.2026 in der Play Console als aktiver Produktionsrelease angezeigt
+- Paket: `com.snote.domezos`, Version 6.1.4 (versionCode 54); Produktionsstand in der Play Console am 28.10.2026: 6.1.3 (versionCode 53)
+- Release-Optimierungen ab 6.1.4 (Play-Console-Empfehlungen): R8 samt `shrinkResources` über das Custom Launcher Gradle Template `Assets/Plugins/Android/launcherTemplate.gradle`; entschlüsselte Bilder werden auf `AppInfo.MaxImageEdge` verkleinert (`ImageCodec.Downsample` in `Scripts/Platform/NativeBridge.cs`, genutzt in `Scripts/UI/Screens/MainPage.cs`)
 
 ## Funktionen
 
